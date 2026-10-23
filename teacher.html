@@ -79,11 +79,21 @@ pre{background:#0b1228;border-radius:12px;padding:12px;overflow:auto;max-height:
     <div id="boards"></div>
   </div>
 
-  <h2>Google Form link</h2>
+  <h2>Automatic scores (set this up once)</h2>
   <div class="card">
-    <div class="note">Paste your Google Form link here to put an <b>Open the form</b> button on every game’s end screen. Then download settings.js and upload it to GitHub, replacing the old one.</div>
-    <div class="row"><input id="formurl" style="flex:1;min-width:300px;background:#0b1228;color:var(--ink);border:2px solid #2b3d7a;border-radius:10px;padding:10px 12px;font:inherit" placeholder="https://forms.gle/..."><button class="primary" id="btn-settings">Download settings.js</button></div>
-    <div class="note" id="set-note"></div>
+    <div class="note">With this on, a finished game sends the score to your Google Sheet by itself, and the leaderboard on the site reads the <b>approved</b> rows from the sheet. Nobody has to type or paste a code. You approve names by ticking a box in the sheet.</div>
+    <ol>
+      <li><b>Make the form.</b> At forms.google.com, create a form with two short-answer questions: <b>Name</b> and <b>Score code</b>. In Settings, turn <b>off</b> “Collect email addresses”, “Limit to 1 response” and anything that makes students sign in.</li>
+      <li><b>Make a pre-filled link.</b> Click the three dots, then <b>Get pre-filled link</b>. Type the word <b>NAME</b> in the Name box and the word <b>CODE</b> in the Score code box, click <b>Get link</b>, and copy it. Paste it below.</li>
+      <li><b>Open the sheet.</b> In the form’s <b>Responses</b> tab, click the green Sheets icon. In the new sheet, type <b>Approved</b> in cell D1, select cells <b>D2 to D1000</b>, and choose <b>Insert, then Tick box</b>.</li>
+      <li><b>Make the public tab.</b> Click <b>+</b> at the bottom to add a second tab. In its cell A1 type <b>Name</b>, in B1 type <b>Score code</b>, and in A2 paste this (change the first tab’s name if it isn’t “Form Responses 1”):<pre>=FILTER('Form Responses 1'!B2:C, 'Form Responses 1'!D2:D=TRUE)</pre></li>
+      <li><b>Publish only that tab.</b> Choose <b>File, then Share, then Publish to web</b>. Pick the <b>second tab</b>, set the format to <b>Comma-separated values (.csv)</b>, click <b>Publish</b>, and copy the link. Paste it below.</li>
+    </ol>
+    <div class="note">Only rows you tick appear in that second tab, so only approved names are ever public.</div>
+    <div class="row"><input id="prefill" style="flex:1;min-width:300px;background:#0b1228;color:var(--ink);border:2px solid #2b3d7a;border-radius:10px;padding:10px 12px;font:inherit" placeholder="Pre-filled form link (from step 2)"></div>
+    <div class="row"><input id="csvurl" style="flex:1;min-width:300px;background:#0b1228;color:var(--ink);border:2px solid #2b3d7a;border-radius:10px;padding:10px 12px;font:inherit" placeholder="Published CSV link (from step 5)"></div>
+    <div class="row"><button class="primary" id="btn-settings">Download settings.js</button><span class="note" id="set-note"></span></div>
+    <div class="note">Then upload settings.js to your GitHub repository, replacing the old one. Play one practice round on the site, tick it in the sheet, and watch it appear on the leaderboard.</div>
   </div>
 </div>
 
@@ -1348,17 +1358,29 @@ $('btn-allvalid').addEventListener('click',function(){rows.forEach(function(r){i
 $('btn-none').addEventListener('click',function(){rows.forEach(function(r){if(r.valid)approved[keyOf(r)]=false;});store.set('sikes_t_ok',JSON.stringify(approved));render();});
 $('btn-json').addEventListener('click',download);
 $('btn-copyjson').addEventListener('click',copyJson);
-$('formurl').value=(window.SIKES_SETTINGS&&window.SIKES_SETTINGS.formUrl)||store.get('sikes_t_form')||'';
+function parsePrefill(u){
+  var url;try{url=new URL(u);}catch(e){return {err:'That doesn’t look like a link. Paste the whole pre-filled link.'};}
+  var m=url.pathname.match(/\/forms\/d\/e\/([^\/]+)\//);
+  if(!m)return {err:'Use the long pre-filled link from Google Forms (not a forms.gle short link).'};
+  var nameE='',codeE='';
+  url.searchParams.forEach(function(v,k){if(/^entry\.\d+$/.test(k)){if(/^name$/i.test(v.trim()))nameE=k;if(/^code$/i.test(v.trim()))codeE=k;}});
+  if(!nameE||!codeE)return {err:'Type the word NAME in the name box and CODE in the score code box before you click Get link.'};
+  var base='https://docs.google.com/forms/d/e/'+m[1];
+  return {formUrl:base+'/viewform',post:{url:base+'/formResponse',nameEntry:nameE,codeEntry:codeE}};
+}
+$('prefill').value=store.get('sikes_t_prefill')||'';
+$('csvurl').value=(window.SIKES_SETTINGS&&window.SIKES_SETTINGS.csvUrl)||store.get('sikes_t_csv')||'';
 $('btn-settings').addEventListener('click',function(){
-  var u=$('formurl').value.trim();
-  if(u&&!/^https:\/\//i.test(u)){$('set-note').textContent='The link should start with https://';return;}
-  store.set('sikes_t_form',u);
-  saveFile('settings.js','window.SIKES_SETTINGS='+JSON.stringify({formUrl:u})+';\n');
+  var p=$('prefill').value.trim(),c=$('csvurl').value.trim(),out={formUrl:'',csvUrl:''};
+  if(p){var r=parsePrefill(p);if(r.err){$('set-note').textContent=r.err;return;}out.formUrl=r.formUrl;out.post=r.post;}
+  if(c){if(!/^https:\/\/docs\.google\.com\/spreadsheets\//.test(c)){$('set-note').textContent='The CSV link should start with https://docs.google.com/spreadsheets/';return;}out.csvUrl=c;}
+  store.set('sikes_t_prefill',p);store.set('sikes_t_csv',c);
+  saveFile('settings.js','window.SIKES_SETTINGS='+JSON.stringify(out,null,2)+';\n');
   $('set-note').textContent='Downloaded. Upload settings.js to GitHub, replacing the old one.';
 });
 $('paste').value=store.get('sikes_t_paste')||'';
 check();
-window.__T={parse:parse,build:build,getRows:function(){return rows;},approve:function(r){approved[keyOf(r)]=true;}};
+window.__T={parsePrefill:parsePrefill,parse:parse,build:build,getRows:function(){return rows;},approve:function(r){approved[keyOf(r)]=true;}};
 })();
 </script>
 </body>
