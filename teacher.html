@@ -1,0 +1,1365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Teacher page – Sikes Arcade</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#070b16;--panel:#0f1730;--line:#26396f;--ink:#eef3ff;--dim:#9db0d6;--accent:#ff8a3d;--cyan:#38d6ff;--mint:#4be39a;--rose:#ff6b81;--gold:#ffcf5a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Nunito','Trebuchet MS',Arial,sans-serif;font-weight:600;font-size:18px;line-height:1.45}
+.wrap{max-width:1240px;margin:0 auto;padding:28px 24px 80px}
+h1{font-family:'Baloo 2','Nunito',sans-serif;font-size:50px;margin:0;color:var(--accent);line-height:1.1}
+h2{font-family:'Baloo 2','Nunito',sans-serif;font-size:30px;margin:34px 0 8px}
+.sub{color:var(--dim);margin:2px 0 18px}
+.card{background:var(--panel);border:2px solid var(--line);border-radius:18px;padding:18px 22px}
+ol{margin:6px 0 0 22px;padding:0}li{margin:4px 0}
+textarea{width:100%;height:170px;background:#0b1228;color:var(--ink);border:2px solid #2b3d7a;border-radius:12px;padding:12px;font:15px/1.4 Consolas,'Courier New',monospace}
+button{font-family:inherit;font-size:18px;font-weight:800;border:0;border-radius:12px;padding:10px 20px;cursor:pointer;background:#1c2a5a;color:var(--ink)}
+button:hover{background:#2a3d80}button.primary{background:var(--accent);color:#1d1004}button.primary:hover{background:#ff9d5e}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-top:12px}
+table{width:100%;border-collapse:collapse;margin-top:10px;font-size:17px}
+th{text-align:left;color:var(--dim);font-size:15px;padding:6px 8px;border-bottom:2px solid var(--line)}
+td{padding:7px 8px;border-bottom:1px solid #1b2850;vertical-align:middle}
+tr.bad td{opacity:.55}
+input.nm{width:150px;background:#0b1228;color:var(--ink);border:2px solid #2b3d7a;border-radius:8px;padding:4px 8px;font:inherit}
+input[type=checkbox]{width:24px;height:24px;accent-color:#4be39a}
+.ok{color:var(--mint);font-weight:800}.no{color:var(--rose);font-weight:800}.warn{color:var(--gold);font-weight:800}
+.pill{display:inline-block;background:#1b2a5a;color:var(--cyan);border-radius:10px;padding:0 10px;font-size:15px}
+.note{color:var(--dim);font-size:16px}
+pre{background:#0b1228;border-radius:12px;padding:12px;overflow:auto;max-height:220px;font-size:14px}
+#boards{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.b h3{margin:0 0 6px;font-family:'Baloo 2','Nunito',sans-serif;font-size:24px;color:var(--cyan)}
+.b ol{margin:0 0 0 20px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Teacher page</h1>
+  <div class="sub">Sikes Arcade · Only you need this page. Students never see it, and nothing here posts anything by itself.</div>
+
+  <div class="card">
+    <b>How the leaderboard works</b>
+    <ol>
+      <li>Students finish a round and send their <b>name</b> and <b>score code</b> through your Google Form.</li>
+      <li>In the Google Form, open <b>Responses</b>, click the green Sheets icon, select all the rows, and <b>copy</b> them.</li>
+      <li>Paste them in the box below. The page checks every code against the name it was typed with.</li>
+      <li>Tick <b>Count it</b> for each name you approve. You can fix how a name will appear.</li>
+      <li>Click <b>Download leaderboard.js</b>, then upload it to your GitHub repository (it replaces the old one). That is the only way names become public.</li>
+    </ol>
+  </div>
+
+  <h2>1. Paste the form responses</h2>
+  <textarea id="paste" placeholder="Paste rows from your Google Sheet here. Each row needs a name and a score code, in any column order."></textarea>
+  <div class="row">
+    <button class="primary" id="btn-check">Check the codes</button>
+    <button id="btn-demo">Try it with practice data</button>
+    <button id="btn-clear">Clear the box</button>
+    <span class="note" id="read-note"></span>
+  </div>
+
+  <h2>2. Approve names</h2>
+  <div class="note">A green check means the code was earned under that exact name (capital letters and spaces don’t matter). A red mark means the code and name don’t go together, so it can’t be counted.</div>
+  <div class="row">
+    <button id="btn-allvalid">Tick every green check</button>
+    <button id="btn-none">Untick all</button>
+    <span id="count-note" class="note"></span>
+  </div>
+  <table id="tbl"><thead><tr><th>Count it</th><th>Name shown on the board</th><th>Game</th><th>Skill</th><th>Score</th><th>Correct</th><th>Played</th><th>Code check</th></tr></thead><tbody></tbody></table>
+
+  <h2>3. Make the leaderboard file</h2>
+  <div class="card">
+    <div class="note">Each student appears once per game, with their best approved score. The file holds the top 10 for each game, plus a top 10 for each skill inside each game.</div>
+    <div class="row"><button class="primary" id="btn-json">Download leaderboard.js</button><button id="btn-copyjson">Copy the file text</button><span class="note" id="json-note"></span></div>
+    <h2 style="margin-top:18px">What students will see</h2>
+    <div id="boards"></div>
+  </div>
+
+  <h2>Google Form link</h2>
+  <div class="card">
+    <div class="note">Paste your Google Form link here to put an <b>Open the form</b> button on every game’s end screen. Then download settings.js and upload it to GitHub, replacing the old one.</div>
+    <div class="row"><input id="formurl" style="flex:1;min-width:300px;background:#0b1228;color:var(--ink);border:2px solid #2b3d7a;border-radius:10px;padding:10px 12px;font:inherit" placeholder="https://forms.gle/..."><button class="primary" id="btn-settings">Download settings.js</button></div>
+    <div class="note" id="set-note"></div>
+  </div>
+</div>
+
+<script src="settings.js"></script>
+<script>
+/* =====================================================================
+   SikesQ: the shared question bank for Sikes Arcade (games/questions.js)
+   Every game loads this one file. SETS are append-only: score codes store
+   each set's position in the list, so never reorder or delete a set.
+   ===================================================================== */
+var SikesQ=(function(){
+'use strict';
+var MINUS='\u2212';
+function rnd(a,b){return a+Math.floor(Math.random()*(b-a+1));}
+function pick(a){return a[Math.floor(Math.random()*a.length)];}
+function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
+function fmt(n){return String(Math.round(Math.abs(n)*100)/100);}
+function num(n){return (n<0?MINUS:'')+fmt(n);}
+function plain(h){return String(h).replace(/<[^>]*>/g,'');}
+function art(n){return (n===8||n===11||n===18)?'An':'A';}
+function subs(f){return f.replace(/(\d+)/g,'<sub>$1</sub>');}
+
+/* ---------- chemistry data + an independent formula parser ---------- */
+var ELEM={H:'hydrogen',O:'oxygen',C:'carbon',N:'nitrogen',S:'sulfur',Ca:'calcium',Al:'aluminum',
+          Mg:'magnesium',Na:'sodium',Fe:'iron',Cl:'chlorine'};
+var FORMULAS=[
+ {f:'H2O',c:{H:2,O:1}},{f:'CO2',c:{C:1,O:2}},{f:'NH3',c:{N:1,H:3}},{f:'CH4',c:{C:1,H:4}},
+ {f:'H2SO4',c:{H:2,S:1,O:4}},{f:'HNO3',c:{H:1,N:1,O:3}},{f:'H2O2',c:{H:2,O:2}},
+ {f:'Ca(OH)2',c:{Ca:1,O:2,H:2}},{f:'Al(OH)3',c:{Al:1,O:3,H:3}},
+ {f:'Mg(NO3)2',c:{Mg:1,N:2,O:6}},{f:'Ca(NO3)2',c:{Ca:1,N:2,O:6}},
+ {f:'Al2(SO4)3',c:{Al:2,S:3,O:12}},{f:'(NH4)2SO4',c:{N:2,H:8,S:1,O:4}},
+ {f:'C6H12O6',c:{C:6,H:12,O:6}},{f:'NaHCO3',c:{Na:1,H:1,C:1,O:3}},{f:'Na2CO3',c:{Na:2,C:1,O:3}},
+ {f:'CaCO3',c:{Ca:1,C:1,O:3}},{f:'Fe2O3',c:{Fe:2,O:3}},{f:'NaCl',c:{Na:1,Cl:1}}
+];
+FORMULAS.forEach(function(x){x.h=subs(x.f);});
+function parseF(s,ignoreGroupMult){
+  var i=0;
+  function number(){var st=i;while(i<s.length&&/[0-9]/.test(s[i]))i++;return st===i?1:parseInt(s.slice(st,i),10);}
+  function group(){
+    var out={};
+    while(i<s.length){
+      var ch=s[i];
+      if(ch==='('){i++;var inner=group();var n=number();if(ignoreGroupMult)n=1;
+        for(var k in inner)out[k]=(out[k]||0)+inner[k]*n;}
+      else if(ch===')'){i++;return out;}
+      else if(/[A-Z]/.test(ch)){var sym=ch;i++;if(i<s.length&&/[a-z]/.test(s[i])){sym+=s[i];i++;}
+        var m=number();out[sym]=(out[sym]||0)+m;}
+      else i++;
+    }
+    return out;
+  }
+  return group();
+}
+function sumVals(o){var t=0;for(var k in o)t+=o[k];return t;}
+function digitSum(f){var t=0,m=f.match(/\d+/g)||[];m.forEach(function(d){t+=parseInt(d,10);});return t;}
+
+/* ---------- build one 4-choice question from a spec ---------- */
+function build(spec){
+  if(!spec)return null;
+  if(!spec.check(spec.correct.val))return null;               // the right answer must pass the check
+  var seen={};seen[spec.correct.html]=true;var pool=[];
+  spec.wrongs.forEach(function(w){
+    if(seen[w.html])return; seen[w.html]=true;
+    if(spec.check(w.val))return;                               // a wrong choice may never pass
+    pool.push(w);
+  });
+  if(pool.length<3)return null;
+  pool=shuffle(pool).slice(0,3);
+  var all=[{html:spec.correct.html,ok:true,why:''}].concat(pool.map(function(w){return {html:w.html,ok:false,why:w.why};}));
+  all=shuffle(all);all.forEach(function(c,i){c.key=String(i+1);});
+  return {topic:spec.topic,prompt:spec.prompt,choices:all,explain:spec.explain||'',visual:spec.visual||null};
+}
+
+/* ---------- generic generators for concept questions ----------
+   labelGen: the 4 (or 5) choices are always the same labels; item = [question, answerLabel, explanation]
+   bankGen:  each item carries its own wrong answers; item = [question, right, explanation, [[wrong, why], ...]] */
+function labelGen(topic,items,labels,whyFn,lead){
+  return function(){
+    var it=pick(items),a=it[1];
+    var wr=labels.filter(function(l){return l!==a;}).map(function(l){return {val:l,html:l,why:whyFn(l)};});
+    return {topic:topic,prompt:(lead||'')+it[0],correct:{val:a,html:a},wrongs:wr,
+      check:function(v){return v===a;},explain:it[2]||('The answer is <b>'+a+'</b>.')};
+  };
+}
+function bankGen(topic,items){
+  return function(){
+    var it=pick(items),a=it[1];
+    var wr=it[3].map(function(w){return {val:w[0],html:w[0],why:w[1]};});
+    return {topic:topic,prompt:it[0],correct:{val:a,html:a},wrongs:wr,
+      check:function(v){return v===a;},explain:it[2]||('The answer is <b>'+a+'</b>.')};
+  };
+}
+
+/* ---------- small SVG helpers (380 x 380, dark theme) ---------- */
+function svgOpen(){return '<svg viewBox="0 0 380 380" width="380" height="380" xmlns="http://www.w3.org/2000/svg" font-family="Nunito,Arial,sans-serif" font-size="17" font-weight="700">';}
+function graphSVG(o){
+  var W=380,H=380,L=64,R=14,T=14,B=62,pw=W-L-R,ph=H-T-B;
+  function X(t){return L+t/o.xmax*pw;}
+  function Y(d){return T+ph-d/o.ymax*ph;}
+  var s=svgOpen(),i;
+  for(i=0;i<=o.xmax;i+=o.xstep){s+='<line x1="'+X(i)+'" y1="'+T+'" x2="'+X(i)+'" y2="'+(T+ph)+'" stroke="#2b3d7a" stroke-width="1"/>';
+    if(i%o.xlab===0)s+='<text x="'+X(i)+'" y="'+(T+ph+22)+'" fill="#eef3ff" text-anchor="middle">'+i+'</text>';}
+  for(i=0;i<=o.ymax;i+=o.ystep){s+='<line x1="'+L+'" y1="'+Y(i)+'" x2="'+(L+pw)+'" y2="'+Y(i)+'" stroke="#2b3d7a" stroke-width="1"/>';
+    if(i%o.ylab===0)s+='<text x="'+(L-8)+'" y="'+(Y(i)+6)+'" fill="#eef3ff" text-anchor="end">'+i+'</text>';}
+  s+='<line x1="'+L+'" y1="'+T+'" x2="'+L+'" y2="'+(T+ph)+'" stroke="#9db0d6" stroke-width="3"/>';
+  s+='<line x1="'+L+'" y1="'+(T+ph)+'" x2="'+(L+pw)+'" y2="'+(T+ph)+'" stroke="#9db0d6" stroke-width="3"/>';
+  s+='<text x="'+(L+pw/2)+'" y="'+(H-8)+'" fill="#9db0d6" text-anchor="middle">Time (s)</text>';
+  s+='<text transform="translate(16,'+(T+ph/2)+') rotate(-90)" fill="#9db0d6" text-anchor="middle">Distance (m)</text>';
+  (o.marks||[]).forEach(function(m){
+    s+='<line x1="'+X(m.t)+'" y1="'+(T+ph)+'" x2="'+X(m.t)+'" y2="'+Y(m.d)+'" stroke="#ff8a3d" stroke-width="2" stroke-dasharray="6 5"/>';
+    s+='<line x1="'+L+'" y1="'+Y(m.d)+'" x2="'+X(m.t)+'" y2="'+Y(m.d)+'" stroke="#ff8a3d" stroke-width="2" stroke-dasharray="6 5"/>';
+  });
+  o.lines.forEach(function(ln){
+    var p=ln.pts.map(function(q){return X(q[0]).toFixed(1)+','+Y(q[1]).toFixed(1);}).join(' ');
+    s+='<polyline points="'+p+'" fill="none" stroke="'+ln.color+'" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>';
+    if(ln.dots)ln.pts.forEach(function(q,k){if(k===0||k===ln.pts.length-1)s+='<circle cx="'+X(q[0])+'" cy="'+Y(q[1])+'" r="7" fill="'+ln.color+'"/>';});
+    if(ln.label){var e=ln.pts[ln.pts.length-1];s+='<text x="'+(X(e[0])-8)+'" y="'+(Y(e[1])-10)+'" fill="'+ln.color+'" text-anchor="end" font-size="20">'+ln.label+'</text>';}
+  });
+  return s+'</svg>';
+}
+
+/* =====================================================================
+   SET 0  Newton's Second Law (8.7A)
+   ===================================================================== */
+var OBJ=['cart','wagon','sled','skateboard','crate','lab trolley','toy car','shopping cart'];
+function gAccel(){
+  var m=pick([2,3,4,5,6,8,10,12,15,20]),a=rnd(2,9),F=m*a,o=pick(OBJ),wr=[];
+  function W(v,why){wr.push({val:v,html:num(v)+' m/s²',why:why});}
+  W(F*m,'You multiplied. Acceleration is force <b>÷</b> mass.');
+  W(m/F,'That’s upside down. Divide the force by the mass.');
+  W(F-m,'Subtracting doesn’t work here. Use a = F ÷ m.');
+  W(F+m,'Adding doesn’t work here. Use a = F ÷ m.');
+  return {topic:'accel',prompt:art(m)+' <b>'+m+' kg</b> '+o+' is pushed with a net force of <b>'+F+' N</b>. What is its acceleration?',
+    correct:{val:a,html:a+' m/s²'},wrongs:wr,check:function(v){return Math.abs(v*m-F)<1e-9;},
+    explain:'a = F ÷ m = '+F+' ÷ '+m+' = <b>'+a+' m/s²</b>'};
+}
+function gForce(){
+  var m=rnd(2,12),a=rnd(2,9),F=m*a,o=pick(OBJ),wr=[];
+  function W(v,why){wr.push({val:v,html:num(v)+' N',why:why});}
+  W(m+a,'You added. Force is mass <b>×</b> acceleration.');
+  W(m/a,'That’s mass ÷ acceleration. Multiply them instead.');
+  W(a/m,'That’s upside down. Multiply mass by acceleration.');
+  W(m-a,'Subtracting doesn’t work here. Use F = m × a.');
+  return {topic:'force',prompt:art(m)+' <b>'+m+' kg</b> '+o+' speeds up at <b>'+a+' m/s²</b>. What net force acts on it?',
+    correct:{val:F,html:F+' N'},wrongs:wr,check:function(v){return Math.abs(v/m-a)<1e-9;},
+    explain:'F = m × a = '+m+' × '+a+' = <b>'+F+' N</b>'};
+}
+function gMass(){
+  var m=pick([2,3,4,5,6,8,10,12,15]),a=rnd(2,9),F=m*a,wr=[];
+  function W(v,why){wr.push({val:v,html:num(v)+' kg',why:why});}
+  W(F*a,'You multiplied. Mass is force <b>÷</b> acceleration.');
+  W(a/F,'That’s upside down. Divide the force by the acceleration.');
+  W(F-a,'Subtracting doesn’t work here. Use m = F ÷ a.');
+  W(F+a,'Adding doesn’t work here. Use m = F ÷ a.');
+  return {topic:'mass',prompt:'A net force of <b>'+F+' N</b> gives an object an acceleration of <b>'+a+' m/s²</b>. What is its mass?',
+    correct:{val:m,html:m+' kg'},wrongs:wr,check:function(v){return Math.abs(v*a-F)<1e-9;},
+    explain:'m = F ÷ a = '+F+' ÷ '+a+' = <b>'+m+' kg</b>'};
+}
+function gNet(){
+  var m=pick([2,3,4,5,6,8,10]),a=rnd(2,8),net=m*a,F2=rnd(5,30),F1=F2+net,wr=[];
+  function W(v,why){wr.push({val:v,html:num(v)+' m/s²',why:why});}
+  W((F1+F2)/m,'Those pushes point opposite ways, so subtract to find the net force first.');
+  W(F1/m,'You ignored the push from the other student. Use the net force.');
+  W(net,'That’s the net force. Now divide it by the mass.');
+  W(net*m,'You multiplied. Divide the net force by the mass.');
+  W(F2/m,'You used only the smaller push. Use the net force.');
+  return {topic:'net',prompt:'Two students push '+art(m).toLowerCase()+' <b>'+m+' kg</b> crate. One pushes right with <b>'+F1+' N</b>. The other pushes left with <b>'+F2+' N</b>. What is the crate’s acceleration?',
+    correct:{val:a,html:a+' m/s²'},wrongs:wr,check:function(v){return Math.abs(v*m-(F1-F2))<1e-9;},
+    explain:'Net force = '+F1+' − '+F2+' = '+net+' N (to the right)<br>a = '+net+' ÷ '+m+' = <b>'+a+' m/s²</b>'};
+}
+
+/* =====================================================================
+   SET 1  Count the Atoms (7.6B)
+   ===================================================================== */
+function gOne(){
+  var f=pick(FORMULAS),els=Object.keys(f.c),el=pick(els),cnt=f.c[el],wr=[];
+  var other=pick(els.filter(function(e){return e!==el;}));
+  var vis=parseF(f.f,true)[el];
+  function W(v,why){wr.push({val:v,html:String(v),why:why});}
+  W(sumVals(f.c),'That’s <b>all</b> the atoms. The question asks only about '+ELEM[el]+'.');
+  W(els.length,'That counts kinds of elements, not atoms of '+ELEM[el]+'.');
+  W(vis,'Remember: the number outside the parentheses multiplies everything inside.');
+  W(f.c[other],'That’s the count for '+ELEM[other]+', not '+ELEM[el]+'.');
+  W(cnt+1,'Check again. No subscript means 1 atom.');
+  if(cnt>1)W(cnt-1,'Check again. Count every atom of '+ELEM[el]+'.');
+  return {topic:'one',prompt:'How many <b>'+ELEM[el]+'</b> atoms are in <b>'+f.h+'</b>?',
+    correct:{val:cnt,html:String(cnt)},wrongs:wr,check:function(v){return parseF(f.f)[el]===v;},
+    explain:'In '+f.h+', '+ELEM[el]+' ('+el+') shows up <b>'+cnt+'</b> time'+(cnt>1?'s':'')+'.'+(f.f.indexOf('(')>=0?' Multiply the number outside the parentheses by the number inside.':'')};
+}
+function gTotal(){
+  var f=pick(FORMULAS),els=Object.keys(f.c),tot=sumVals(f.c),wr=[];
+  function W(v,why){wr.push({val:v,html:String(v),why:why});}
+  W(els.length,'That counts kinds of elements. Count every atom.');
+  W(digitSum(f.f),'You added only the subscripts. An element with no subscript is 1 atom.');
+  W(sumVals(parseF(f.f,true)),'Remember: the number outside the parentheses multiplies everything inside.');
+  W(tot+1,'Close. Recount each element carefully.');
+  W(tot-1,'Close. Recount each element carefully.');
+  W(tot+2,'Recount each element carefully.');
+  var parts=els.map(function(e){return e+' = '+f.c[e];}).join(', ');
+  return {topic:'total',prompt:'How many atoms in all are in <b>'+f.h+'</b>?',
+    correct:{val:tot,html:String(tot)},wrongs:wr,check:function(v){return sumVals(parseF(f.f))===v;},
+    explain:parts+'.<br>Total = <b>'+tot+'</b> atoms.'};
+}
+function gWhich(){
+  var el=pick(['O','H']),pool=FORMULAS.filter(function(x){return x.c[el];}),byCount={};
+  pool.forEach(function(x){(byCount[x.c[el]]=byCount[x.c[el]]||[]).push(x);});
+  var singles=Object.keys(byCount).filter(function(k){return byCount[k].length===1;});
+  if(singles.length<1||Object.keys(byCount).length<4)return null;
+  var n=parseInt(pick(singles),10),right=byCount[n][0];
+  var counts=shuffle(Object.keys(byCount).filter(function(k){return parseInt(k,10)!==n;})).slice(0,4);
+  var wr=counts.map(function(k){var x=pick(byCount[k]);
+    return {val:x.f,html:x.h,why:x.h+' has '+x.c[el]+' '+ELEM[el]+' atom'+(x.c[el]>1?'s':'')+', not '+n+'.'};});
+  var lines=[right].concat(wr.map(function(w){return FORMULAS.filter(function(x){return x.f===w.val;})[0];}))
+    .map(function(x){return x.h+' → '+x.c[el];}).join('<br>');
+  return {topic:'which',prompt:'Which formula has exactly <b>'+n+'</b> '+ELEM[el]+' atom'+(n>1?'s':'')+'?',
+    correct:{val:right.f,html:right.h},wrongs:wr,check:function(v){return parseF(v)[el]===n;},
+    explain:'Count '+ELEM[el]+' in each formula:<br>'+lines};
+}
+
+/* =====================================================================
+   SET 2  Classify the Elements (6.6C)
+   ===================================================================== */
+var CLS=['Metal','Nonmetal','Metalloid','Rare Earth'];
+var ELTAB=[
+ ['Sodium','Na','Metal'],['Magnesium','Mg','Metal'],['Aluminum','Al','Metal'],['Iron','Fe','Metal'],['Copper','Cu','Metal'],
+ ['Zinc','Zn','Metal'],['Silver','Ag','Metal'],['Gold','Au','Metal'],['Calcium','Ca','Metal'],['Potassium','K','Metal'],
+ ['Lead','Pb','Metal'],['Tin','Sn','Metal'],['Nickel','Ni','Metal'],
+ ['Hydrogen','H','Nonmetal'],['Carbon','C','Nonmetal'],['Nitrogen','N','Nonmetal'],['Oxygen','O','Nonmetal'],
+ ['Fluorine','F','Nonmetal'],['Sulfur','S','Nonmetal'],['Phosphorus','P','Nonmetal'],['Chlorine','Cl','Nonmetal'],
+ ['Helium','He','Nonmetal'],['Neon','Ne','Nonmetal'],['Argon','Ar','Nonmetal'],
+ ['Boron','B','Metalloid'],['Silicon','Si','Metalloid'],['Germanium','Ge','Metalloid'],['Arsenic','As','Metalloid'],
+ ['Antimony','Sb','Metalloid'],['Tellurium','Te','Metalloid'],
+ ['Neodymium','Nd','Rare Earth'],['Lanthanum','La','Rare Earth'],['Cerium','Ce','Rare Earth'],['Europium','Eu','Rare Earth'],
+ ['Dysprosium','Dy','Rare Earth'],['Praseodymium','Pr','Rare Earth'],['Gadolinium','Gd','Rare Earth'],['Samarium','Sm','Rare Earth']
+];
+var CLS_WHY={
+ 'Metal':'Metals are shiny, bendable, and good conductors.',
+ 'Nonmetal':'Nonmetals are dull and brittle (or gases) and poor conductors.',
+ 'Metalloid':'Metalloids sit along the zigzag staircase and act like both groups.',
+ 'Rare Earth':'Rare earth elements are the two rows pulled out below the main table.'
+};
+function gClass(){
+  var e=pick(ELTAB),a=e[2];
+  var wr=CLS.filter(function(c){return c!==a;}).map(function(c){return {val:c,html:c,why:CLS_WHY[c]+' '+e[0]+' doesn’t fit that.'};});
+  return {topic:'class',prompt:'What kind of element is <b>'+e[0]+' ('+e[1]+')</b>?',
+    correct:{val:a,html:a},wrongs:wr,
+    check:function(v){for(var i=0;i<ELTAB.length;i++){if(ELTAB[i][1]===e[1])return ELTAB[i][2]===v;}return false;},
+    explain:e[0]+' is a <b>'+a+'</b>. '+CLS_WHY[a]};
+}
+var gClues=labelGen('clues',[
+ ['Shiny, easy to bend into wire, and a great conductor of electricity.','Metal'],
+ ['Dull and brittle. It shatters when hit and does not conduct electricity.','Nonmetal'],
+ ['A semiconductor used in computer chips. It sits along the zigzag staircase.','Metalloid'],
+ ['Found in the two rows at the bottom of the table. Used in strong magnets and phone screens.','Rare Earth'],
+ ['A gas at room temperature that does not conduct electricity.','Nonmetal'],
+ ['Can be hammered flat without breaking.','Metal'],
+ ['Has some properties of metals and some properties of nonmetals.','Metalloid'],
+ ['Tiny, powerful magnets in headphones and wind turbines are made from this kind of element.','Rare Earth'],
+ ['Used for electrical wiring because it conducts electricity so well.','Metal'],
+ ['A poor conductor of heat, often a crumbly or powdery solid.','Nonmetal']
+],CLS,function(l){return CLS_WHY[l]+' That doesn’t match this clue.';},'Which kind of element fits this clue?<br>');
+
+/* =====================================================================
+   SET 3  Evidence of Chemical Change (6.6E)
+   ===================================================================== */
+var EVL=['Gas produced','Thermal energy change','Precipitate forms','Color change'];
+var EV_WHY={
+ 'Gas produced':'Gas evidence means new bubbles or fizzing. That isn’t the main clue here.',
+ 'Thermal energy change':'Energy evidence means the temperature rises or falls. That isn’t the main clue here.',
+ 'Precipitate forms':'A precipitate is a new solid that appears in a liquid. That isn’t the main clue here.',
+ 'Color change':'Color evidence means a new color appears. That isn’t the main clue here.'
+};
+var gEvidence=labelGen('evidence',[
+ ['You mix baking soda and vinegar and the cup fizzes with bubbles.','Gas produced'],
+ ['You snap an instant cold pack and it quickly gets very cold.','Thermal energy change'],
+ ['Two clear liquids are mixed and a cloudy white solid sinks to the bottom.','Precipitate forms'],
+ ['A shiny iron nail left in water slowly turns orange-brown.','Color change'],
+ ['An antacid tablet dropped into water makes lots of bubbles.','Gas produced'],
+ ['You open a hand warmer packet and it heats up as iron reacts with air.','Thermal energy change'],
+ ['A silver spoon slowly turns black.','Color change'],
+ ['Bread dough puffs up as yeast makes carbon dioxide.','Gas produced'],
+ ['A sliced apple left on the counter turns brown.','Color change'],
+ ['Mixing two clear solutions makes a yellow solid that settles to the bottom.','Precipitate forms']
+],EVL,function(l){return EV_WHY[l];},'Which clue of a chemical change is the best match?<br>');
+var gDecide=bankGen('decide',[
+ ['Which observation is the best evidence that a <b>new substance</b> formed?','A solid forms when two clear liquids are mixed.',
+  'A new solid appearing in a liquid (a precipitate) is a clue that a chemical change happened.',
+  [['Ice melts into water.','Melting is a physical change. It is still water.'],['Sugar dissolves in water.','The sugar is still sugar. It can be recovered.'],['A piece of paper is torn in half.','Tearing changes the size, not the substance.']]],
+ ['Which observation is the best evidence that a <b>new substance</b> formed?','Bubbles of gas appear when a tablet is dropped into water.',
+  'A new gas being produced is a clue of a chemical change.',
+  [['Water is heated until it boils.','Boiling bubbles are water vapor. It is still H₂O.'],['Salt is stirred into water.','Dissolving is a physical change.'],['A rubber band is stretched.','Stretching changes shape only.']]],
+ ['Which observation is the best evidence that a <b>new substance</b> formed?','A copper statue slowly turns green.',
+  'A color change that is not just paint or dye is a clue that a new substance formed.',
+  [['A copper wire is bent into a spiral.','Bending changes shape only.'],['Copper is melted into a mold.','Melting is a physical change.'],['A copper penny is polished with a cloth.','Polishing only cleans the surface.']]],
+ ['Which observation is the best evidence that a <b>new substance</b> formed?','Heat and light are given off as wood burns, leaving ash.',
+  'Burning gives off energy and makes ash and gases, which are new substances.',
+  [['Wood is sawed into small pieces.','Sawing changes size only.'],['Butter melts in a warm pan.','Melting is a physical change.'],['Chalk is crushed into powder.','Crushing changes size only.']]]
+]);
+
+/* =====================================================================
+   SET 4  Forces Around You (6.7A)
+   ===================================================================== */
+var FRL=['Gravity','Friction','Magnetism','Applied force','Normal force'];
+var FR_WHY={
+ 'Gravity':'Gravity is the pull toward Earth. Look for a different push or pull.',
+ 'Friction':'Friction acts between touching surfaces and resists sliding. Look for a different force.',
+ 'Magnetism':'Magnetism pulls or pushes on magnetic materials without touching. Look for a different force.',
+ 'Applied force':'An applied force is a push or pull from a person or object. Look for a different force.',
+ 'Normal force':'A normal force is a surface pushing back, straight out from the surface. Look for a different force.'
+};
+var gForceName=labelGen('name',[
+ ['A book rests on a table. The table pushes up on the book.','Normal force'],
+ ['You drop a pencil and it falls to the floor.','Gravity'],
+ ['A hockey puck slides across rough carpet and slows to a stop.','Friction'],
+ ['A refrigerator magnet holds a paper to the fridge door.','Magnetism'],
+ ['A student pushes a shopping cart down an aisle.','Applied force'],
+ ['You walk without slipping because the ground grips your shoes.','Friction'],
+ ['Earth keeps the Moon in its orbit.','Gravity'],
+ ['A compass needle turns to point north.','Magnetism'],
+ ['A skateboarder stands still. The ground pushes up on the board.','Normal force'],
+ ['A dog pulls on its leash during a walk.','Applied force']
+],FRL,function(l){return FR_WHY[l];},'Which force is acting?<br>');
+var gForceReal=bankGen('real',[
+ ['Why do bike brakes slow a bike down?','Friction between the brake pads and the wheel','Rubbing surfaces make friction, which slows the wheel.',
+  [['Gravity gets stronger when you squeeze the brakes.','Gravity does not change when you brake.'],['Magnetism pulls the wheel to a stop.','Brake pads and wheel rims work by friction, not magnetism.'],['A normal force pushes the bike forward.','A normal force pushes straight out from a surface, not forward.']]],
+ ['A box sits on a ramp and does not slide down. Which force helps keep it there?','Friction between the box and the ramp','Friction acts up the ramp and resists sliding.',
+  [['Magnetism between the box and the ramp','Most boxes and ramps are not magnetic.'],['Gravity pushing the box up the ramp','Gravity pulls down, not up the ramp.'],['An applied force from the ramp','The ramp is not pushing or pulling along its surface.']]],
+ ['Which force always pushes straight out from a surface, perpendicular to it?','Normal force','The normal force is the support force from a surface.',
+  [['Friction','Friction acts along the surface, not straight out.'],['Gravity','Gravity pulls toward Earth’s center.'],['Magnetism','Magnetism does not need a surface.']]],
+ ['What does the force of gravity between two objects depend on?','Their masses and the distance between them','More mass means more gravity, and more distance means less.',
+  [['Only the color of the objects','Color has no effect on gravity.'],['How fast the objects are moving','Speed does not change the pull of gravity.'],['Only their temperature','Temperature does not change gravity.']]],
+ ['Which of these is an example of an applied force?','A person pushing a stalled car','An applied force is a push or pull from a person or object.',
+  [['A book resting on a desk','That is a normal force balancing gravity.'],['An apple falling from a tree','That is gravity.'],['A sock sticking to a sweater','That is static electricity.']]]
+]);
+
+/* =====================================================================
+   SET 5  Net Force (6.7B)
+   ===================================================================== */
+function fHtml(n,pos,neg){return n===0?'0 N balanced':Math.abs(n)+' N '+(n>0?pos:neg);}
+function netWrongs(sum,diff,wr,pos,neg,extra){
+  function W(v,why){wr.push({val:v,html:fHtml(v,pos,neg),why:why});}
+  extra.forEach(function(e){W(e[0],e[1]);});
+}
+function gNetSame(){
+  var a=rnd(5,40),b=rnd(5,40),wr=[],net=a+b;
+  netWrongs(0,0,wr,'right','left',[
+   [Math.abs(a-b),'You subtracted. These forces point the same way, so they <b>add</b>.'],
+   [-(a+b),'The direction is reversed. Both pushes go right.'],
+   [a,'You used only one force. Add both.'],[b,'You used only one force. Add both.'],[0,'The forces don’t cancel because they point the same way.']]);
+  return {topic:'same',prompt:'Two students push a box to the <b>right</b> at the same time: <b>'+a+' N</b> and <b>'+b+' N</b>. What is the net force?',
+    correct:{val:net,html:fHtml(net,'right','left')},wrongs:wr,check:function(v){return v===a+b;},
+    explain:'Same direction, so add: '+a+' + '+b+' = <b>'+net+' N right</b>. The forces are unbalanced, so the box accelerates.'};
+}
+function gNetOpp(){
+  var a=rnd(10,60),b=rnd(10,60);if(Math.random()<0.2)b=a;
+  var net=a-b,wr=[];
+  netWrongs(0,0,wr,'right','left',[
+   [a+b,'You added. These forces point opposite ways, so <b>subtract</b>.'],
+   [-(a-b),'The direction is reversed. The larger force wins.'],
+   [a,'You ignored the force going the other way.'],[-b,'You ignored the force going the other way.'],
+   [0,'Those forces are not equal, so they don’t cancel.']]);
+  return {topic:'opp',prompt:'A cart is pulled <b>right</b> with <b>'+a+' N</b> and <b>left</b> with <b>'+b+' N</b>. What is the net force?',
+    correct:{val:net,html:fHtml(net,'right','left')},wrongs:wr,check:function(v){return v===a-b;},
+    explain:'Opposite directions, so subtract: '+a+' − '+b+' = <b>'+(net===0?'0 N':Math.abs(net)+' N '+(net>0?'right':'left'))+'</b>. '+(net===0?'The forces are balanced, so there is no change in motion.':'The forces are unbalanced, so the cart accelerates.')};
+}
+function gNetThree(){
+  var a=rnd(5,30),b=rnd(5,30),c=rnd(5,30),net=a-b+c,wr=[];
+  netWrongs(0,0,wr,'right','left',[
+   [a+b+c,'You added all three. The left force works against the other two.'],
+   [a-b-c,'Only the left force should be subtracted. Both right forces add.'],
+   [-(a-b+c),'The direction is reversed.'],[a+c,'You forgot the force pulling left.'],[a-b,'You forgot one of the right-pointing forces.']]);
+  return {topic:'three',prompt:'Three forces act on a crate: <b>'+a+' N</b> right, <b>'+b+' N</b> left, and <b>'+c+' N</b> right. What is the net force?',
+    correct:{val:net,html:fHtml(net,'right','left')},wrongs:wr,check:function(v){return v===a-b+c;},
+    explain:'Right forces add: '+a+' + '+c+' = '+(a+c)+' N. Subtract the left force: '+(a+c)+' − '+b+' = <b>'+Math.abs(net)+' N '+(net>0?'right':'left')+'</b>.'};
+}
+var VERT=[['A skydiver','weight pulls down','air resistance pushes up'],['A hanging lantern','weight pulls down','the rope pulls up'],
+  ['An elevator','weight pulls down','the cable pulls up'],['A hot air balloon','weight pulls down','lift pushes up']];
+function gNetVert(){
+  var s=pick(VERT),D=rnd(10,90)*10,U=Math.random()<0.35?D:rnd(10,90)*10,net=U-D,wr=[];
+  netWrongs(0,0,wr,'up','down',[
+   [U+D,'You added. Up and down forces oppose each other, so <b>subtract</b>.'],
+   [-(U-D),'The direction is reversed. The larger force wins.'],
+   [U,'You ignored the downward force.'],[-D,'You ignored the upward force.'],[0,'Those forces are not equal, so they don’t cancel.']]);
+  return {topic:'vertical',prompt:s[0]+': '+s[1]+' with <b>'+D+' N</b> and '+s[2]+' with <b>'+U+' N</b>. What is the net force?',
+    correct:{val:net,html:fHtml(net,'up','down')},wrongs:wr,check:function(v){return v===U-D;},
+    explain:U+' − '+D+' = <b>'+(net===0?'0 N':Math.abs(net)+' N '+(net>0?'up':'down'))+'</b>. '+(net===0?'Balanced forces mean no change in motion.':'Unbalanced forces change the motion.')};
+}
+
+/* =====================================================================
+   SET 6  Energy Transfers (6.8B)
+   ===================================================================== */
+var gTransform=bankGen('transform',[
+ ['In a flashlight, which energy change happens?','Chemical → electrical → light','The battery stores chemical energy, which becomes electrical energy, then light (and a little heat).',
+  [['Light → chemical → electrical','That is backwards for a flashlight.'],['Thermal → sound → light','A flashlight doesn’t run on heat or sound.'],['Elastic → chemical → light','There is no stretched spring in a flashlight.']]],
+ ['During photosynthesis, a plant changes light energy into what?','Chemical energy stored in sugar','Plants store the Sun’s energy in the bonds of glucose.',
+  [['Thermal energy that disappears','Energy is never destroyed. It changes form.'],['Kinetic energy of the leaves','Leaves don’t move because of photosynthesis.'],['Electrical energy in the roots','Plants store energy in sugar, not as electricity.']]],
+ ['In a food web, where does the energy first come from?','The Sun','Producers capture sunlight, and consumers get that energy by eating.',
+  [['The decomposers','Decomposers get energy from dead matter. It started with the Sun.'],['The predators','Predators get energy from prey. It started with the Sun.'],['The soil','Soil doesn’t make energy for food webs.']]],
+ ['A roller coaster car rolls down the first hill. What energy change is happening?','Gravitational potential → kinetic','Height energy changes into motion energy as it speeds up.',
+  [['Kinetic → gravitational potential','That happens going up, not down.'],['Chemical → elastic','No chemical or elastic energy is changing here.'],['Thermal → potential','Heat isn’t the main change on the way down.']]],
+ ['A battery lights a bulb. What happens to the total amount of energy?','It stays the same but changes form','Chemical energy becomes electrical, then light and heat. The total is conserved.',
+  [['It increases because the bulb makes new energy','Energy can’t be created.'],['It disappears when the bulb turns on','Energy can’t be destroyed.'],['It is destroyed by the wire','Energy can’t be destroyed. Some becomes heat.']]],
+ ['A pendulum slowly stops swinging. Where did its energy go?','Into thermal energy in the air and string','Friction and air resistance turn motion energy into heat.',
+  [['It was destroyed','Energy is conserved. It only changes form.'],['It turned into mass in the bob','That’s not what happens in a pendulum.'],['It was stored in the floor forever','The energy spreads out as heat.']]],
+ ['A runner eats a sandwich and then sprints. Which energy change happens?','Chemical energy from food → kinetic and thermal energy','Food energy powers muscles, and some becomes heat.',
+  [['Kinetic energy from food → chemical energy in the track','The track doesn’t store the energy.'],['Light energy → sound energy','That’s not how muscles are powered.'],['Electrical energy → chemical energy in muscles','Muscles run on chemical energy from food.']]],
+ ['A solar panel powers a small fan. Which chain shows the energy changes?','Light → electrical → kinetic','The panel changes light into electricity, and the motor changes electricity into motion.',
+  [['Kinetic → electrical → light','That’s backwards.'],['Chemical → light → sound','A solar panel doesn’t use chemical energy.'],['Thermal → chemical → kinetic','A solar panel doesn’t work that way.']]]
+]);
+function gCoaster(){
+  var tot=rnd(4,20)*100,pe=rnd(1,tot/100-1)*100,ke=tot-pe,form=rnd(0,2),wr=[],prompt,right,html,why;
+  function W(v,why){wr.push({val:v,html:v+' J',why:why});}
+  if(form===0){
+    prompt='A coaster car has <b>'+tot+' J</b> of gravitational potential energy and <b>0 J</b> of kinetic energy at the top. Partway down its potential energy is <b>'+pe+' J</b>. What is its kinetic energy? (No friction.)';
+    right=ke;W(pe,'That’s the potential energy that is left. Kinetic = total − potential.');W(tot,'That’s the total energy, not the kinetic part.');
+    W(tot+pe,'You added. The total stays the same, so subtract.');W(ke+100,'Close. Subtract carefully.');W(Math.max(0,ke-100),'Close. Subtract carefully.');
+    why=tot+' − '+pe+' = <b>'+ke+' J</b>';
+  }else if(form===1){
+    prompt='A coaster car has <b>'+pe+' J</b> of potential energy and <b>'+ke+' J</b> of kinetic energy at the same moment. What is its total mechanical energy?';
+    right=tot;W(pe,'That’s only the potential energy.');W(ke,'That’s only the kinetic energy.');W(Math.abs(ke-pe),'You subtracted. Total = potential + kinetic.');
+    W(tot+100,'Close. Add carefully.');W(Math.max(100,tot-100),'Close. Add carefully.');
+    why=pe+' + '+ke+' = <b>'+tot+' J</b>';
+  }else{
+    prompt='A coaster car’s total mechanical energy is <b>'+tot+' J</b>. At one spot its kinetic energy is <b>'+ke+' J</b>. What is its potential energy there? (No friction.)';
+    right=pe;W(ke,'That’s the kinetic energy. Potential = total − kinetic.');W(tot,'That’s the total energy.');W(tot+ke,'You added. Subtract the kinetic energy from the total.');
+    W(pe+100,'Close. Subtract carefully.');W(Math.max(0,pe-100),'Close. Subtract carefully.');
+    why=tot+' − '+ke+' = <b>'+pe+' J</b>';
+  }
+  return {topic:'coaster',prompt:prompt,correct:{val:right,html:right+' J'},wrongs:wr,
+    check:function(v){return form===0?(v+pe===tot):form===1?(v-ke===pe):(v+ke===tot);},
+    explain:'Energy is conserved: potential + kinetic stays the same. '+why};
+}
+
+/* =====================================================================
+   SET 7  Layers of Earth (6.10B)
+   ===================================================================== */
+var LAYERS=['Crust','Mantle','Outer core','Inner core'];
+var LAY_WHY={
+ 'Crust':'The crust is the thin, rocky outer layer. That doesn’t match this clue.',
+ 'Mantle':'The mantle is the thick layer of hot, slowly flowing rock. That doesn’t match this clue.',
+ 'Outer core':'The outer core is liquid iron and nickel. That doesn’t match this clue.',
+ 'Inner core':'The inner core is a solid ball of iron and nickel. That doesn’t match this clue.'
+};
+var gLayerClue=labelGen('clue',[
+ ['The thinnest layer. It is the rocky shell we live on.','Crust'],
+ ['The thickest layer. Hot rock here flows very slowly.','Mantle'],
+ ['A layer of liquid iron and nickel. Its motion helps make Earth’s magnetic field.','Outer core'],
+ ['The hottest layer. It is solid because of the huge pressure.','Inner core'],
+ ['The layer between the crust and the outer core.','Mantle'],
+ ['The solid, rocky layer closest to the surface, where continents and ocean floors are.','Crust'],
+ ['A solid ball of metal at Earth’s center.','Inner core'],
+ ['The only liquid layer of Earth’s interior.','Outer core']
+],LAYERS,function(l){return LAY_WHY[l];},'Which layer of Earth matches this clue?<br>');
+function gLayerOrder(){
+  var i=rnd(0,3),form=rnd(0,2),a,prompt,ans;
+  if(form===0&&i<3){prompt='Which layer is directly <b>below</b> the '+LAYERS[i].toLowerCase()+'?';ans=LAYERS[i+1];}
+  else if(form===1&&i>0){prompt='Which layer is directly <b>above</b> the '+LAYERS[i].toLowerCase()+'?';ans=LAYERS[i-1];}
+  else{prompt='If you dug straight down from the surface, which layer would you reach <b>'+['first','second','third','last'][i]+'</b>?';ans=LAYERS[i];}
+  var wr=LAYERS.filter(function(l){return l!==ans;}).map(function(l){return {val:l,html:l,why:LAY_WHY[l].replace(' That doesn’t match this clue.','')+' It is not in that position.'};});
+  var chk=prompt.indexOf('below')>=0?function(v){return LAYERS.indexOf(v)===i+1;}:prompt.indexOf('above')>=0?function(v){return LAYERS.indexOf(v)===i-1;}:function(v){return LAYERS.indexOf(v)===i;};
+  return {topic:'order',prompt:prompt,correct:{val:ans,html:ans},wrongs:wr,check:chk,
+    explain:'From the surface down: <b>Crust → Mantle → Outer core → Inner core</b>.'};
+}
+
+/* =====================================================================
+   SET 8  Physical or Chemical? (7.6C)
+   ===================================================================== */
+var CHEMS=[['Iron rusting','rust is a new substance'],['Wood burning','ash and gases are new substances'],['Baking a cake','the batter becomes something new'],
+ ['Milk turning sour','new substances form'],['Silver tarnishing','a new black compound forms'],['Cooking an egg','proteins change into new substances'],
+ ['An antacid fizzing in water','a new gas forms'],['A copper statue turning green','a new green compound forms'],['Digesting food','food is broken down into new substances']];
+var PHYS=[['Ice melting','it is still water'],['Sugar dissolving in water','the sugar is still sugar'],['Tearing paper','it is still paper'],
+ ['Crushing a can','the metal is the same, only the shape changed'],['Water boiling','it is still H₂O as vapor'],['Breaking a glass','it is still glass'],
+ ['Bending a paper clip','the metal is the same'],['Freezing juice','it is the same juice, just solid'],['Mixing salt and pepper','each keeps its own identity']];
+function gChemWhich(){
+  var r=pick(CHEMS),others=shuffle(PHYS).slice(0,3);
+  var wr=others.map(function(p){return {val:p[0],html:p[0],why:'That is a physical change: '+p[1]+'.'};});
+  return {topic:'chem',prompt:'Which of these is a <b>chemical</b> change?',correct:{val:r[0],html:r[0]},wrongs:wr,
+    check:function(v){return CHEMS.some(function(c){return c[0]===v;});},explain:r[0]+' is a chemical change: '+r[1]+'.'};
+}
+function gPhysWhich(){
+  var r=pick(PHYS),others=shuffle(CHEMS).slice(0,3);
+  var wr=others.map(function(c){return {val:c[0],html:c[0],why:'That is a chemical change: '+c[1]+'.'};});
+  return {topic:'phys',prompt:'Which of these is a <b>physical</b> change?',correct:{val:r[0],html:r[0]},wrongs:wr,
+    check:function(v){return PHYS.some(function(c){return c[0]===v;});},explain:r[0]+' is a physical change: '+r[1]+'.'};
+}
+var gChemIdea=bankGen('idea',[
+ ['Which statement best describes a <b>chemical</b> change?','A new substance with different properties forms','Chemical changes make new substances.',
+  [['The material only changes shape or size.','That is a physical change.'],['The material changes state, like melting.','That is a physical change.'],['Two things are mixed but each stays the same.','That is a mixture, a physical change.']]],
+ ['Which statement best describes a <b>physical</b> change?','The substance changes form but is still the same substance','Physical changes do not make new substances.',
+  [['A new substance forms with new properties.','That is a chemical change.'],['Bubbles always form.','Bubbles can appear in a physical change too, like boiling.'],['It can never be reversed.','Many physical changes can be reversed, like freezing and melting.']]],
+ ['A student crushes a piece of chalk into powder. What kind of change is this?','Physical, because it is still chalk','Crushing changes size, not what the chalk is made of.',
+  [['Chemical, because the chalk looks different','Looking different alone doesn’t mean a new substance.'],['Chemical, because it got smaller','Size changes are physical.'],['Neither, because nothing changed','The size and shape did change. It’s a physical change.']]]
+]);
+
+/* =====================================================================
+   SET 9  Average Speed (7.7A)
+   ===================================================================== */
+var UNITS=[['m','s'],['m','s'],['km','h'],['mi','h']];
+var MOVERS=['A cyclist','A runner','A toy car','A train','A bus','A swimmer'];
+function gSpeed(){
+  var u=pick(UNITS),v=rnd(2,15),t=rnd(2,12),d=v*t,who=pick(MOVERS),wr=[];
+  function W(x,why){wr.push({val:x,html:num(x)+' '+u[0]+'/'+u[1],why:why});}
+  W(d*t,'You multiplied. Speed = distance ÷ time.');W(t/d,'That’s upside down. Divide distance by time.');
+  W(d-t,'Subtracting doesn’t work. Speed = distance ÷ time.');W(d+t,'Adding doesn’t work. Speed = distance ÷ time.');
+  return {topic:'speed',prompt:who+' travels <b>'+d+' '+u[0]+'</b> in <b>'+t+' '+u[1]+'</b>. What is the average speed?',
+    correct:{val:v,html:v+' '+u[0]+'/'+u[1]},wrongs:wr,check:function(x){return Math.abs(x*t-d)<1e-9;},
+    explain:'speed = distance ÷ time = '+d+' ÷ '+t+' = <b>'+v+' '+u[0]+'/'+u[1]+'</b>'};
+}
+function gDist(){
+  var u=pick(UNITS),v=rnd(2,15),t=rnd(2,12),d=v*t,who=pick(MOVERS),wr=[];
+  function W(x,why){wr.push({val:x,html:num(x)+' '+u[0],why:why});}
+  W(v+t,'Adding doesn’t work. Distance = speed × time.');W(v/t,'Divide? No, multiply: distance = speed × time.');
+  W(t/v,'That’s upside down. Multiply speed by time.');W(v-t,'Subtracting doesn’t work. Distance = speed × time.');
+  return {topic:'distance',prompt:who+' moves at an average speed of <b>'+v+' '+u[0]+'/'+u[1]+'</b> for <b>'+t+' '+u[1]+'</b>. How far does it go?',
+    correct:{val:d,html:d+' '+u[0]},wrongs:wr,check:function(x){return Math.abs(x/t-v)<1e-9;},
+    explain:'distance = speed × time = '+v+' × '+t+' = <b>'+d+' '+u[0]+'</b>'};
+}
+function gTime(){
+  var u=pick(UNITS),v=rnd(2,15),t=rnd(2,12),d=v*t,who=pick(MOVERS),wr=[];
+  function W(x,why){wr.push({val:x,html:num(x)+' '+u[1],why:why});}
+  W(d*v,'You multiplied. Time = distance ÷ speed.');W(v/d,'That’s upside down. Divide distance by speed.');
+  W(d-v,'Subtracting doesn’t work. Time = distance ÷ speed.');W(d+v,'Adding doesn’t work. Time = distance ÷ speed.');
+  return {topic:'time',prompt:who+' goes <b>'+d+' '+u[0]+'</b> at an average speed of <b>'+v+' '+u[0]+'/'+u[1]+'</b>. How long does it take?',
+    correct:{val:t,html:t+' '+u[1]},wrongs:wr,check:function(x){return Math.abs(x*v-d)<1e-9;},
+    explain:'time = distance ÷ speed = '+d+' ÷ '+v+' = <b>'+t+' '+u[1]+'</b>'};
+}
+function gTrip(){
+  var t1=rnd(2,6),t2=rnd(2,6),v=rnd(3,9),D=v*(t1+t2),d1=rnd(2,D-2),d2=D-d1,wr=[];
+  function W(x,why){wr.push({val:x,html:num(x)+' m/s',why:why});}
+  W((d1/t1+d2/t2)/2,'You averaged the two speeds. Use total distance ÷ total time.');
+  W(d1/t1,'That’s only the speed of the first part.');W(d2/t2,'That’s only the speed of the second part.');
+  W(D,'That’s the total distance. Divide it by the total time.');W(D/t1,'Use the total time, '+(t1+t2)+' s.');
+  return {topic:'trip',prompt:'A student walks <b>'+d1+' m</b> in <b>'+t1+' s</b>, then <b>'+d2+' m</b> in <b>'+t2+' s</b>. What is the average speed for the whole trip?',
+    correct:{val:v,html:v+' m/s'},wrongs:wr,check:function(x){return Math.abs(x*(t1+t2)-(d1+d2))<1e-9;},
+    explain:'Total distance = '+d1+' + '+d2+' = '+D+' m. Total time = '+t1+' + '+t2+' = '+(t1+t2)+' s.<br>'+D+' ÷ '+(t1+t2)+' = <b>'+v+' m/s</b>'};
+}
+
+/* =====================================================================
+   SET 10  Distance-Time Graphs (7.7C)  (picture questions, answers <= 12 chars)
+   ===================================================================== */
+function slopeLabel(pts){
+  var sl=[],i;for(i=0;i<pts.length-1;i++)sl.push(pts[i+1][1]-pts[i][1]);
+  var mn=Math.min.apply(null,sl),mx=Math.max.apply(null,sl);
+  if(Math.abs(mx)<1e-9&&Math.abs(mn)<1e-9)return 'At rest';
+  if(mx-mn<1e-6)return 'Steady speed';
+  return sl[sl.length-1]>sl[0]?'Speeding up':'Slowing down';
+}
+var GRAPH_BASE={xmax:10,ymax:60,xstep:1,ystep:5,xlab:2,ylab:10};
+function gGraphSpeed(){
+  var v=pick([2,3,4,5]),d0=pick([0,0,10]),dEnd=d0+10*v,wr=[];
+  var g=graphSVG({xmax:10,ymax:60,xstep:1,ystep:5,xlab:2,ylab:10,lines:[{pts:[[0,d0],[10,dEnd]],color:'#ffcf5a',dots:true}]});
+  function W(x,why){wr.push({val:x,html:num(x)+' m/s',why:why});}
+  W(dEnd/10,'You used the final distance only. Subtract the starting distance first.');
+  W(dEnd,'That’s the distance, not the speed. Divide by the time.');
+  W(10/v,'That’s upside down. Speed = distance ÷ time.');W(v*10,'You multiplied. Speed = distance ÷ time.');W(v+1,'Close. Check the change in distance.');W(Math.max(1,v-1),'Close. Check the change in distance.');
+  return {topic:'speed',prompt:'What is the object’s average speed from 0 to 10 seconds?',visual:g,
+    correct:{val:v,html:v+' m/s'},wrongs:wr,check:function(x){return Math.abs(x*10-(dEnd-d0))<1e-9;},
+    explain:'Change in distance = '+dEnd+' − '+d0+' = '+(dEnd-d0)+' m in 10 s.<br>speed = '+(dEnd-d0)+' ÷ 10 = <b>'+v+' m/s</b>'};
+}
+function gGraphShape(){
+  var kind=pick(['rest','steady','up','down']),d0=pick([0,10]),pts=[],t,v=pick([2,3,4]);
+  for(t=0;t<=10;t+=0.5){
+    var d=kind==='rest'?d0+10:kind==='steady'?d0+v*t:kind==='up'?d0+0.5*t*t:d0+45*(1-Math.pow(1-t/10,2));
+    pts.push([t,d]);
+  }
+  var coarse=pts.filter(function(p){return p[0]%1===0;});
+  var KIND={rest:'At rest',steady:'Steady speed',up:'Speeding up',down:'Slowing down'},ans=KIND[kind];
+  if(slopeLabel(coarse)!==ans)return null;                       // the drawn line must match the intended motion
+  var labels=['At rest','Steady speed','Speeding up','Slowing down'],W={
+   'At rest':'A flat line means the distance isn’t changing.','Steady speed':'A straight sloped line means the same speed the whole time.',
+   'Speeding up':'A line that curves steeper means the object is speeding up.','Slowing down':'A line that curves flatter means the object is slowing down.'};
+  var wr=labels.filter(function(l){return l!==ans;}).map(function(l){return {val:l,html:l,why:W[l]+' This graph isn’t that.'};});
+  var g=graphSVG({xmax:10,ymax:60,xstep:1,ystep:5,xlab:2,ylab:10,lines:[{pts:pts,color:'#ffcf5a'}]});
+  return {topic:'shape',prompt:'Which statement best describes the motion shown in the graph?',visual:g,
+    correct:{val:ans,html:ans},wrongs:wr,check:function(x){return x===KIND[kind];},explain:W[ans]};
+}
+function gGraphRead(){
+  var combos=[],v,t;
+  for(v=2;v<=6;v++)for(t=1;t<=9;t++){if((v*t)%5===0&&v*t<=60)combos.push([v,t]);}
+  var c=pick(combos),vv=c[0],t0=c[1],d=vv*t0,wr=[];
+  var g=graphSVG({xmax:10,ymax:60,xstep:1,ystep:5,xlab:2,ylab:10,lines:[{pts:[[0,0],[10,10*vv]],color:'#ffcf5a'}],marks:[{t:t0,d:d}]});
+  function W(x,why){wr.push({val:x,html:num(x)+' m',why:why});}
+  W(t0,'That’s the time. Follow the dashed line over to the distance axis.');W(vv,'That’s the speed, not the distance.');
+  W(d+5,'Close. Read the distance axis carefully.');W(d-5,'Close. Read the distance axis carefully.');W(d+10,'Close. Read the distance axis carefully.');
+  return {topic:'read',prompt:'How far has the object traveled after <b>'+t0+' seconds</b>?',visual:g,
+    correct:{val:d,html:d+' m'},wrongs:wr,check:function(x){return x===vv*t0;},
+    explain:'Go up from '+t0+' s to the line, then across to the distance axis: <b>'+d+' m</b>.'};
+}
+function gGraphCompare(){
+  var a=rnd(1,6),b=Math.random()<0.15?a:rnd(1,6);
+  var g=graphSVG({xmax:10,ymax:60,xstep:1,ystep:5,xlab:2,ylab:10,lines:[
+    {pts:[[0,0],[10,10*a]],color:'#ffcf5a',label:'A'},{pts:[[0,0],[10,10*b]],color:'#38d6ff',label:'B'}]});
+  var ans=a>b?'Object A':a<b?'Object B':'Same speed';
+  var labels=['Object A','Object B','Same speed','Can’t tell'];
+  var W={'Object A':'Object A is not faster here.','Object B':'Object B is not faster here.','Same speed':'The lines have different slopes, so the speeds differ.','Can’t tell':'You can tell. A steeper line means a faster object.'};
+  if(a===b)W['Object A']=W['Object B']='The lines have the same slope, so neither is faster.';
+  var wr=labels.filter(function(l){return l!==ans;}).map(function(l){return {val:l,html:l,why:W[l]};});
+  return {topic:'compare',prompt:'Which object is moving faster?',visual:g,correct:{val:ans,html:ans},wrongs:wr,
+    check:function(x){var sa=(10*a-0)/10,sb=(10*b-0)/10;return x===(sa>sb?'Object A':sa<sb?'Object B':'Same speed');},
+    explain:'A steeper line means a greater change in distance each second, so a faster speed.'};
+}
+
+/* =====================================================================
+   SET 11  Earth Over Time (7.10A)
+   ===================================================================== */
+var gEvidenceBank=bankGen('evidence',[
+ ['Fossils of a sea creature are found high on a mountain. What does this suggest?','The land was once under the ocean and was later lifted up','Plate movement can raise ocean floor into mountains.',
+  [['The animal climbed the mountain to die','Sea creatures can’t climb mountains.'],['Fossils only form on mountains','Fossils form in many places.'],['The mountain has always been this tall','Then sea fossils wouldn’t be there.']]],
+ ['The same land reptile fossil, Mesosaurus, is found in South America and Africa. What does this support?','The continents were once joined and moved apart','Matching fossils on separate continents support plate tectonics.',
+  [['The reptile swam across the Atlantic Ocean','It lived in fresh water and could not cross an ocean.'],['The continents have always been far apart','Then the same land animal would not be on both.'],['Fossils are the same everywhere on Earth','Fossils differ from place to place.']]],
+ ['Which best states the law of superposition?','In undisturbed rock layers, the oldest layer is on the bottom','New layers settle on top of older ones.',
+  [['The oldest layer is always on top','Newer layers are deposited on top.'],['All layers are the same age','Layers form at different times.'],['Layers form only from volcanoes','Most layers form from sediment settling.']]],
+ ['Fossils of tropical ferns are found in Antarctica. What does this suggest?','Antarctica was once in a warmer place or had a warmer climate','Plates moved or the climate changed over time.',
+  [['Ferns evolved to live in ice','These ferns grew in warm, wet places.'],['Antarctica has always been this cold','Then tropical ferns couldn’t have lived there.'],['Penguins carried the ferns there','Animals don’t explain buried fossils.']]],
+ ['Which is evidence that Earth has changed over time?','Fossils of extinct organisms are found in rock layers','Fossils show that living things and environments have changed.',
+  [['The Sun rises every day','That’s a daily pattern, not Earth’s long-term change.'],['The Moon has phases','Moon phases repeat every month.'],['Ocean water is salty','That doesn’t show change over time.']]],
+ ['Why do the coastlines of South America and Africa fit like puzzle pieces?','They were once connected and drifted apart','Plate tectonics moved the continents.',
+  [['A giant meteor cut them to match','No evidence supports that.'],['Waves carved them to match','Waves can’t shape whole continents like that.'],['It is only a coincidence with no meaning','Matching rocks and fossils show it means something.']]],
+ ['Fossil A is found in a deeper layer than Fossil B in undisturbed rock. What can you say?','Fossil A is probably older','Deeper layers formed first.',
+  [['Fossil B is probably older','Higher layers formed later.'],['They are exactly the same age','They were buried at different times.'],['You can’t say anything about their ages','Superposition tells you which is older.']]]
+]);
+function layerSVG(fossils){
+  var cols=['#3d5a99','#5f7fc4','#8a6fb4','#b8896a','#6f9a82'],n=4,h=80,s=svgOpen(),i;
+  for(i=0;i<n;i++){
+    s+='<rect x="30" y="'+(24+i*h)+'" width="320" height="'+h+'" fill="'+cols[i]+'" stroke="#0b1228" stroke-width="3"/>';
+    s+='<text x="60" y="'+(24+i*h+h/2+8)+'" fill="#ffffff" font-size="26" text-anchor="middle">'+'ABCD'[i]+'</text>';
+  }
+  fossils.forEach(function(f){var y=24+f.layer*h+h/2;
+    s+='<ellipse cx="250" cy="'+y+'" rx="34" ry="20" fill="#eef3ff" stroke="#0b1228" stroke-width="3"/>';
+    s+='<text x="250" y="'+(y+7)+'" fill="#0b1228" font-size="22" text-anchor="middle">'+f.name+'</text>';});
+  s+='<text x="190" y="16" fill="#9db0d6" text-anchor="middle" font-size="16">Top (newest side)</text>';
+  s+='<text x="190" y="376" fill="#9db0d6" text-anchor="middle" font-size="16">Bottom</text>';
+  return s+'</svg>';
+}
+function gLayers(){
+  var form=rnd(0,2),L='ABCD',wr,ans,prompt,chk,g;
+  if(form<2){
+    var oldest=form===0,idx=rnd(0,3);
+    g=layerSVG([]);
+    prompt='These rock layers have not been disturbed. Which layer is the <b>'+(oldest?'oldest':'youngest')+'</b>?';
+    ans='Layer '+(oldest?'D':'A');
+    wr=['A','B','C','D'].map(function(c){return 'Layer '+c;}).filter(function(x){return x!==ans;}).map(function(x){
+      return {val:x,html:x,why:'In undisturbed layers, the bottom (D) is oldest and the top (A) is youngest.'};});
+    chk=function(v){return v===(oldest?'Layer '+L[3]:'Layer '+L[0]);};
+    return {topic:'layers',prompt:prompt,visual:g,correct:{val:ans,html:ans},wrongs:wr,check:chk,
+      explain:'Older layers are buried under newer ones. The bottom layer, <b>D</b>, is oldest and the top layer, <b>A</b>, is youngest.'};
+  }
+  var a=rnd(0,3),b=rnd(0,3);while(b===a)b=rnd(0,3);
+  g=layerSVG([{layer:a,name:'X'},{layer:b,name:'Y'}]);
+  ans=a>b?'Fossil X':'Fossil Y';
+  wr=[{val:a>b?'Fossil Y':'Fossil X',html:a>b?'Fossil Y':'Fossil X',why:'The deeper fossil is older. Check which one is lower.'},
+      {val:'Same age',html:'Same age',why:'They are in different layers, so they have different ages.'},
+      {val:'Can’t tell',html:'Can’t tell',why:'You can tell. The deeper layer is older.'}];
+  return {topic:'layers',prompt:'Which fossil is probably <b>older</b>?',visual:g,correct:{val:ans,html:ans},wrongs:wr,
+    check:function(v){return v===(a>b?'Fossil X':'Fossil Y');},explain:'The fossil in the deeper layer was buried first, so it is older: <b>'+ans+'</b>.'};
+}
+
+/* =====================================================================
+   SET 12  Plate Tectonics (7.10B)
+   ===================================================================== */
+var PBL=['Convergent','Divergent','Transform','Hot spot'];
+var PB_WHY={
+ 'Convergent':'At a convergent boundary, plates collide or one sinks under another.',
+ 'Divergent':'At a divergent boundary, plates pull apart and new crust forms.',
+ 'Transform':'At a transform boundary, plates slide past each other sideways.',
+ 'Hot spot':'A hot spot is a plume of hot rock rising under the middle of a plate.'
+};
+var gBoundary=labelGen('boundary',[
+ ['Plates move apart and new ocean floor forms at a mid-ocean ridge.','Divergent'],
+ ['Two plates slide past each other sideways, like the San Andreas Fault.','Transform'],
+ ['An ocean plate sinks under a continental plate, making a trench and volcanoes.','Convergent'],
+ ['Two continents collide and crumple up into the Himalayas.','Convergent'],
+ ['Magma rises through the middle of a plate and builds the Hawaiian Islands.','Hot spot'],
+ ['The land stretches and splits, forming the East African rift valley.','Divergent'],
+ ['Earthquakes happen where plates grind sideways, with no volcanoes.','Transform'],
+ ['A supervolcano like Yellowstone sits over a plume of hot rock.','Hot spot']
+],PBL,function(l){return 'That’s not what this describes. '+PB_WHY[l];},'Which one does this describe?<br>');
+var gTectResult=bankGen('result',[
+ ['What forms where an ocean plate sinks under a continental plate?','A deep ocean trench and a line of volcanoes','The sinking plate melts and feeds volcanoes.',
+  [['A mid-ocean ridge','Ridges form where plates pull apart.'],['A rift valley','Rift valleys form where plates pull apart.'],['A hot spot island chain','Hot spot islands form away from plate edges.']]],
+ ['What is built where two plates pull apart on the ocean floor?','New crust at a mid-ocean ridge','Magma rises and cools into new ocean floor.',
+  [['A deep trench','Trenches form where plates collide.'],['A folded mountain range','Folded mountains form where plates collide.'],['A line of earthquakes only','There is also new crust, not just quakes.']]],
+ ['Which feature forms when two continental plates collide?','Folded mountains like the Himalayas','Neither continent sinks easily, so the crust crumples upward.',
+  [['A mid-ocean ridge','Ridges form where plates pull apart.'],['A deep ocean trench','Trenches form at ocean–continent collisions.'],['A hot spot island','Hot spots form in the middle of plates.']]],
+ ['What causes most earthquakes along the San Andreas Fault?','Plates sliding past each other, sticking, then slipping','Stored stress is released suddenly when the plates slip.',
+  [['Plates pulling directly apart','That happens at divergent boundaries.'],['One plate sinking under another','That happens at convergent boundaries.'],['A hot spot erupting','The San Andreas is a plate boundary, not a hot spot.']]],
+ ['The Hawaiian Islands form a chain because…','A plate moves over a stationary hot spot','Each island forms over the hot spot, then drifts away.',
+  [['Plates collide there','Hawaii is in the middle of the Pacific Plate.'],['The ocean floor sinks there','Hawaii is built up by volcanoes.'],['Continents are pulling apart there','Hawaii isn’t at a rift boundary.']]],
+ ['What is the main driver of plate motion?','Heat from Earth’s interior moving rock in the mantle','Hot rock rises, cools, and sinks, helping move the plates.',
+  [['Ocean tides','Tides don’t move plates.'],['Wind blowing across the continents','Wind can’t move plates.'],['The Moon’s gravity pushing the plates','The Moon doesn’t push plates around.']]]
+]);
+
+/* =====================================================================
+   SET 13  Classify Matter (8.6A)
+   ===================================================================== */
+var MTL=['Element','Compound','Homogeneous mixture','Heterogeneous mixture'];
+var MT_WHY={
+ 'Element':'An element is made of only one kind of atom.',
+ 'Compound':'A compound has different atoms chemically bonded in a fixed ratio.',
+ 'Homogeneous mixture':'A homogeneous mixture looks the same throughout.',
+ 'Heterogeneous mixture':'A heterogeneous mixture has parts you can see or separate.'
+};
+var gSubstance=labelGen('sub',[
+ ['A gold bar','Element'],['Oxygen gas, O₂','Element'],['Aluminum foil','Element'],
+ ['Pure water, H₂O','Compound'],['Table salt, NaCl','Compound'],['Carbon dioxide, CO₂','Compound'],
+ ['Sugar completely dissolved in water','Homogeneous mixture'],['Air','Homogeneous mixture'],['Salt water','Homogeneous mixture'],['Brass (copper and zinc blended together)','Homogeneous mixture'],
+ ['A salad','Heterogeneous mixture'],['Granite','Heterogeneous mixture'],['Trail mix','Heterogeneous mixture'],['Sand mixed with iron filings','Heterogeneous mixture'],['Oil and vinegar dressing','Heterogeneous mixture']
+],MTL,function(l){return 'Not this one. '+MT_WHY[l];},'How is this classified?<br>');
+var gMatterModel=labelGen('model',[
+ ['A model shows only one kind of circle, all separate atoms.','Element'],
+ ['A model shows identical particles made of two joined circles of the same kind.','Element'],
+ ['A model shows identical particles, each made of two different circles joined together.','Compound'],
+ ['A model shows two kinds of separate particles spread evenly everywhere, not joined.','Homogeneous mixture'],
+ ['A model shows clumps of one kind of particle in one area and another kind elsewhere.','Heterogeneous mixture']
+],MTL,function(l){return 'Not this one. '+MT_WHY[l];},'Which kind of matter does this particle model show?<br>');
+var PUREEL=['O2','N2','H2','Cl2','Fe','Au','He','Cu','Ne','Ag'];
+function gMatterFormula(){
+  var isEl=Math.random()<0.4,f=isEl?pick(PUREEL):pick(FORMULAS).f,h=subs(f);
+  var ans=isEl?'Element':'Compound',n=Object.keys(parseF(f)).length;
+  var wr=MTL.filter(function(l){return l!==ans;}).map(function(l){return {val:l,html:l,why:l.indexOf('mixture')>=0?'A single formula is one pure substance, not a mixture. '+MT_WHY[ans]:MT_WHY[l]+' This formula shows '+(isEl?'one kind':'different kinds')+' of atom.'};});
+  return {topic:'formula',prompt:'The formula <b>'+h+'</b> shows what kind of matter?',correct:{val:ans,html:ans},wrongs:wr,
+    check:function(v){return (n===1?'Element':'Compound')===v;},
+    explain:h+' has '+(n===1?'only one kind of atom, so it is an <b>element</b>.':n+' kinds of atoms bonded together, so it is a <b>compound</b>.')};
+}
+
+/* =====================================================================
+   SET 14  Periodic Table & Reactions (8.6B)
+   ===================================================================== */
+var PT=[['Hydrogen','H',1],['Helium','He',2],['Lithium','Li',3],['Beryllium','Be',4],['Boron','B',5],['Carbon','C',6],['Nitrogen','N',7],['Oxygen','O',8],
+ ['Fluorine','F',9],['Neon','Ne',10],['Sodium','Na',11],['Magnesium','Mg',12],['Aluminum','Al',13],['Silicon','Si',14],['Phosphorus','P',15],['Sulfur','S',16],
+ ['Chlorine','Cl',17],['Argon','Ar',18],['Potassium','K',19],['Calcium','Ca',20],['Iron','Fe',26],['Copper','Cu',29],['Zinc','Zn',30],['Silver','Ag',47],['Gold','Au',79]];
+var EQS=[
+ {L:[[2,'H2'],[1,'O2']],R:[[2,'H2O']]},
+ {L:[[1,'N2'],[3,'H2']],R:[[2,'NH3']]},
+ {L:[[2,'Na'],[1,'Cl2']],R:[[2,'NaCl']]},
+ {L:[[2,'Mg'],[1,'O2']],R:[[2,'MgO']]},
+ {L:[[1,'CH4'],[2,'O2']],R:[[1,'CO2'],[2,'H2O']]},
+ {L:[[1,'C3H8'],[5,'O2']],R:[[3,'CO2'],[4,'H2O']]},
+ {L:[[4,'Al'],[3,'O2']],R:[[2,'Al2O3']]},
+ {L:[[2,'H2O2']],R:[[2,'H2O'],[1,'O2']]},
+ {L:[[1,'Fe'],[1,'S']],R:[[1,'FeS']]},
+ {L:[[1,'C'],[1,'O2']],R:[[1,'CO2']]},
+ {L:[[6,'CO2'],[6,'H2O']],R:[[1,'C6H12O6'],[6,'O2']],photo:true}
+];
+function term(t,blank){return (blank?'<b>?</b>':(t[0]>1?t[0]:''))+subs(t[1]);}
+function eqHtml(e,bi){
+  var i=0;
+  function side(a){return a.map(function(t){var s=term(t,i===bi);i++;return s;}).join(' + ');}
+  var l=side(e.L),r=side(e.R);return l+' → '+r;
+}
+function sideCount(side,el,coeffOverride){
+  var t=0;side.forEach(function(x,i){var c=coeffOverride&&coeffOverride[i]!==undefined?coeffOverride[i]:x[0];t+=c*(parseF(x[1])[el]||0);});return t;
+}
+function eqElements(e){var s={};e.L.concat(e.R).forEach(function(t){for(var k in parseF(t[1]))s[k]=1;});return Object.keys(s);}
+function gSymbol(){
+  var e=pick(PT),rev=Math.random()<0.5,wr,prompt,ans,chk;
+  var others=shuffle(PT.filter(function(x){return x!==e;})).slice(0,5);
+  if(!rev){
+    prompt='What is the chemical symbol for <b>'+e[0].toLowerCase()+'</b>?';ans=e[1];
+    wr=others.map(function(o){return {val:o[1],html:o[1],why:o[1]+' is the symbol for '+o[0].toLowerCase()+'.'};});
+    chk=function(v){return PT.some(function(x){return x[0]===e[0]&&x[1]===v;});};
+  }else{
+    prompt='Which element has the symbol <b>'+e[1]+'</b>?';ans=e[0];
+    wr=others.map(function(o){return {val:o[0],html:o[0],why:o[0]+' has the symbol '+o[1]+'.'};});
+    chk=function(v){return PT.some(function(x){return x[1]===e[1]&&x[0]===v;});};
+  }
+  return {topic:'symbol',prompt:prompt,correct:{val:ans,html:ans},wrongs:wr,check:chk,
+    explain:e[0]+' has the symbol <b>'+e[1]+'</b> and atomic number '+e[2]+'.'};
+}
+function gAtomicNumber(){
+  var e=pick(PT),rev=Math.random()<0.5,wr,prompt,ans,chk;
+  if(!rev){
+    prompt='What is the atomic number of <b>'+e[0].toLowerCase()+' ('+e[1]+')</b>?';ans=String(e[2]);
+    wr=[e[2]+1,e[2]-1,e[2]+2,e[2]-2,e[2]+8].filter(function(z){return z>0;}).map(function(z){return {val:String(z),html:String(z),why:'Check the periodic table. '+e[0]+' is number '+e[2]+'.'};});
+    chk=function(v){return PT.some(function(x){return x[0]===e[0]&&String(x[2])===v;});};
+  }else{
+    prompt='Which element has atomic number <b>'+e[2]+'</b>?';ans=e[0];
+    wr=shuffle(PT.filter(function(x){return x!==e;})).slice(0,5).map(function(o){return {val:o[0],html:o[0],why:o[0]+' has atomic number '+o[2]+'.'};});
+    chk=function(v){return PT.some(function(x){return x[2]===e[2]&&x[0]===v;});};
+  }
+  return {topic:'number',prompt:prompt,correct:{val:ans,html:ans},wrongs:wr,check:chk,
+    explain:'Atomic number '+e[2]+' is <b>'+e[0]+'</b> ('+e[1]+').'};
+}
+function gReactants(){
+  var e=pick(EQS),syms=[];
+  e.L.forEach(function(t){for(var k in parseF(t[1]))if(syms.indexOf(k)<0)syms.push(k);});
+  var base=syms.slice(),extras=['N','S','Cl','Na','Fe','K','Ca'].filter(function(x){return base.indexOf(x)<0;});
+  function list(a){return a.join(', ');}
+  var wr=[];
+  shuffle(extras).slice(0,2).forEach(function(x){wr.push({val:list(base.concat([x])),html:list(base.concat([x])),why:'That list has '+x+', which is not in the reactants.'});});
+  base.forEach(function(x){var r=base.filter(function(y){return y!==x;});if(r.length)wr.push({val:list(r),html:list(r),why:'That list leaves out '+x+', which is in the reactants.'});});
+  var sw=base.slice();sw[0]=extras[0];wr.push({val:list(sw),html:list(sw),why:'That list swaps in '+extras[0]+', which is not in the reactants.'});
+  return {topic:'reactants',prompt:'In this reaction, which elements are in the <b>reactants</b>?<br>'+eqHtml(e,-1),
+    correct:{val:list(base),html:list(base)},wrongs:wr,
+    check:function(v){var u={};e.L.forEach(function(t){for(var k in parseF(t[1]))u[k]=1;});return Object.keys(u).sort().join(', ')===v.split(', ').sort().join(', ');},
+    explain:'The reactants are on the left of the arrow: '+e.L.map(function(t){return subs(t[1]);}).join(' and ')+'. Their atoms: <b>'+list(base)+'</b>.'};
+}
+
+/* =====================================================================
+   SET 15  Conservation of Mass (8.6E)
+   ===================================================================== */
+function gMassCons(){
+  var form=rnd(0,2),a=rnd(2,30),b=rnd(2,30),tot=a+b,wr=[],prompt,right,why;
+  function W(v,why){wr.push({val:v,html:v+' g',why:why});}
+  if(form===0){
+    prompt='In a closed container, <b>'+a+' g</b> of reactant A reacts completely with <b>'+b+' g</b> of reactant B. What is the total mass of the products?';
+    right=tot;W(Math.abs(a-b),'You subtracted. Mass is conserved, so add the reactants.');W(a,'That’s only one reactant.');W(b,'That’s only one reactant.');W(tot+10,'Mass can’t increase in a closed system.');W(Math.max(1,tot-10),'Mass can’t decrease in a closed system.');
+    why=a+' + '+b+' = <b>'+tot+' g</b>';
+    return {topic:'mass',prompt:prompt,correct:{val:right,html:right+' g'},wrongs:wr,check:function(v){return v===a+b;},explain:'Mass is conserved: '+why};
+  }
+  if(form===1){
+    prompt='A reaction in a sealed flask makes <b>'+tot+' g</b> of products. One reactant had a mass of <b>'+a+' g</b>. What was the mass of the other reactant?';
+    right=b;W(tot,'That’s the total product mass.');W(a,'That’s the mass of the first reactant you were given.');W(tot+a,'You added. Subtract the known reactant from the total.');W(b+5,'Close. Subtract carefully.');W(Math.max(1,b-5),'Close. Subtract carefully.');
+    return {topic:'mass',prompt:prompt,correct:{val:right,html:right+' g'},wrongs:wr,check:function(v){return v+a===tot;},explain:'Reactants = products, so '+tot+' − '+a+' = <b>'+b+' g</b>.'};
+  }
+  var p1=rnd(2,tot-2),p2=tot-p1;
+  prompt='<b>'+tot+' g</b> of reactants react in a closed system and make two products. Product 1 has a mass of <b>'+p1+' g</b>. What is the mass of product 2?';
+  right=p2;W(tot,'That’s the total reactant mass.');W(p1,'That’s the mass of product 1.');W(tot+p1,'You added. Subtract product 1 from the total.');W(p2+4,'Close. Subtract carefully.');W(Math.max(1,p2-4),'Close. Subtract carefully.');
+  return {topic:'mass',prompt:prompt,correct:{val:right,html:right+' g'},wrongs:wr,check:function(v){return v+p1===tot;},explain:'Products must total '+tot+' g, so '+tot+' − '+p1+' = <b>'+p2+' g</b>.'};
+}
+function gBalance(){
+  var e=pick(EQS),n=e.L.length+e.R.length,bi=rnd(0,n-1),all=e.L.concat(e.R),correct=all[bi][0],wr=[];
+  var others=all.map(function(t){return t[0];});
+  var cand=[correct+1,correct+2,Math.max(1,correct-1),correct*2,1,3,4,others[(bi+1)%n]+correct];
+  cand.forEach(function(v){wr.push({val:v,html:String(v),why:'Count the atoms of each element on both sides. That number doesn’t balance the equation.'});});
+  var nL=e.L.length;
+  function balanced(v){
+    var co=all.map(function(t,i){return i===bi?v:t[0];});
+    return eqElements(e).every(function(el){
+      var l=0,r=0;e.L.forEach(function(t,i){l+=co[i]*(parseF(t[1])[el]||0);});
+      e.R.forEach(function(t,i){r+=co[nL+i]*(parseF(t[1])[el]||0);});return l===r;});
+  }
+  return {topic:'balance',prompt:'What number goes in the blank to balance this equation?<br>'+eqHtml(e,bi),
+    correct:{val:correct,html:String(correct)},wrongs:wr,check:balanced,
+    explain:'Atoms are not created or destroyed, so each element must have the same count on both sides. The balanced equation is: '+eqHtml(e,-1)};
+}
+function gAtomCount(){
+  var e=pick(EQS),els=eqElements(e),el=pick(els),side=Math.random()<0.5?'L':'R',arr=e[side],wr=[];
+  var right=sideCount(arr,el),nameSide=side==='L'?'left (reactant)':'right (product)';
+  function W(v,why){wr.push({val:v,html:String(v),why:why});}
+  var noCoef=arr.reduce(function(s,t){return s+(parseF(t[1])[el]||0);},0);
+  W(noCoef,'You ignored the coefficients. Multiply each formula’s atoms by its coefficient.');
+  var all=0;arr.forEach(function(t){all+=t[0]*sumVals(parseF(t[1]));});W(all,'That’s all atoms of every element. Count only '+el+'.');
+  W(right+1,'Close. Recount.');W(Math.max(1,right-1),'Close. Recount.');W(right*2,'Close. Recount.');
+  return {topic:'count',prompt:'How many <b>'+el+'</b> atoms are on the '+nameSide+' side of this equation?<br>'+eqHtml(e,-1),
+    correct:{val:right,html:String(right)},wrongs:wr,check:function(v){return sideCount(arr,el)===v;},
+    explain:'Multiply the coefficient by the subscript for '+el+' in each formula, then add: <b>'+right+'</b>.'+(e.photo?' In photosynthesis both sides have the same number of atoms, which shows mass is conserved.':'')};
+}
+var gClosed=bankGen('closed',[
+ ['Baking soda and vinegar react in a sealed bag and the bag inflates. How does the total mass before compare to after?','The same','The gas stays inside the sealed bag, so no mass is lost.',
+  [['Greater after','Mass can’t be created.'],['Less after','The gas can’t escape from a sealed bag.'],['It can’t be measured','You can measure the bag’s mass before and after.']]],
+ ['A fizzing tablet is dropped in an open cup on a scale. The scale reading drops. Why?','Gas escaped into the air','The missing mass left as gas. It wasn’t destroyed.',
+  [['Mass was destroyed','Mass is conserved.'],['The atoms disappeared','Atoms are rearranged, not destroyed.'],['The water got lighter','The water’s mass didn’t change. Gas escaped.']]],
+ ['Why must a chemical equation be balanced?','Atoms are rearranged, not created or destroyed','The same atoms appear on both sides.',
+  [['To make the equation look neat','Balancing is about conserving atoms and mass.'],['Because mass is destroyed in reactions','Mass is conserved in reactions.'],['Because volumes must match','Mass and atoms are conserved, not volume.']]],
+ ['Steel wool rusts and its mass increases. Why?','The iron combines with oxygen from the air','Rust includes oxygen atoms that came from the air.',
+  [['New atoms of iron were created','Atoms are not created.'],['Mass is not conserved when things rust','Mass is conserved if you count the oxygen.'],['The steel wool absorbed light','Light doesn’t add mass here.']]],
+ ['A candle burns inside a sealed jar. How does the jar’s total mass change?','It stays the same','Nothing enters or leaves the sealed jar.',
+  [['It decreases to zero','Wax and oxygen become gases that stay in the jar.'],['It doubles','Mass can’t double from burning.'],['It increases because of the flame','Light and heat don’t add measurable mass.']]]
+]);
+
+/* =====================================================================
+   SET 16  Newton's Three Laws (8.7B)
+   ===================================================================== */
+var NLL=['First law','Second law','Third law','All three laws'];
+var NL_WHY={
+ 'First law':'The First Law is inertia: objects keep their motion unless a net force acts.',
+ 'Second law':'The Second Law is F = ma: more force or less mass means more acceleration.',
+ 'Third law':'The Third Law is action and reaction: equal and opposite forces on different objects.',
+ 'All three laws':'All three laws act at once only when the situation includes inertia, F = ma, and action-reaction together.'
+};
+var gThreeLaws=labelGen('which',[
+ ['A car stops suddenly and your body lurches forward against the seatbelt.','First law'],
+ ['A rocket pushes hot gas downward and the gas pushes the rocket upward.','Third law'],
+ ['A full shopping cart is harder to speed up than an empty one.','Second law'],
+ ['A swimmer pushes the water backward and moves forward.','Third law'],
+ ['A soccer ball sits still until a player kicks it.','First law'],
+ ['Pedaling harder makes a bike speed up faster.','Second law'],
+ ['A rocket launch: it stays still until thrust starts, thrust and mass set its acceleration, and exhaust pushes back on the rocket.','All three laws'],
+ ['A rider on a roller coaster: the car pushes the rider forward, the rider keeps moving unless pushed, and more force gives more acceleration.','All three laws'],
+ ['A crash test: the dummy keeps moving forward, the airbag pushes back, and a bigger force slows it faster.','All three laws']
+],NLL,function(l){return 'Not quite. '+NL_WHY[l];},'Which of Newton’s laws is this?<br>');
+var gForcePair=bankGen('pair',[
+ ['A swimmer pushes water backward. What is the reaction force?','The water pushes the swimmer forward','Action and reaction forces are equal and opposite.',
+  [['Gravity pulls the swimmer down','Gravity is a different force, not the reaction.'],['The swimmer pushes the water harder','Forces in a pair are equal in size.'],['Friction slows the swimmer','Friction isn’t the reaction to this push.']]],
+ ['A hammer hits a nail with 50 N. What force does the nail exert on the hammer?','50 N on the hammer, in the opposite direction','Newton’s Third Law: equal in size, opposite in direction.',
+  [['0 N because the nail does not move','Forces are exerted even if the object doesn’t move.'],['Less than 50 N because the nail is smaller','Both forces are exactly the same size.'],['50 N in the same direction as the hammer','The reaction points the opposite way.']]],
+ ['Earth pulls on you with gravity. What is the reaction force?','You pull on Earth with an equal force','Gravity acts on both objects in a pair.',
+  [['The floor pushes up on you','That is the normal force, a different force on you.'],['The air pushes down on you','Air isn’t the reaction to gravity.'],['There is no reaction force','Every force has a reaction force.']]],
+ ['A rocket engine pushes exhaust gas downward. What is the reaction force?','The gas pushes the rocket upward','The rocket and the gas push on each other.',
+  [['The gas pushes the rocket downward','The reaction points the opposite way of the action.'],['Gravity pushes the rocket up','Gravity pulls down.'],['Nothing, because space is empty','Rockets work because the gas pushes back.']]],
+ ['A bowling ball hits a pin. Which statement about the forces is true?','They are equal in size and opposite in direction','The two forces form an action-reaction pair.',
+  [['The ball pushes harder than the pin','The forces are the same size.'],['The pin pushes harder than the ball','The forces are the same size.'],['Only the ball exerts a force','The pin pushes back on the ball.']]],
+ ['You jump from a small boat toward the dock and the boat moves backward. Why?','You push the boat back and it pushes you forward','These forces are an action-reaction pair.',
+  [['The boat wants to go backward','Objects don’t “want” anything. Forces cause the motion.'],['Gravity pulls the boat back','Gravity pulls down, not backward.'],['The water pushes the boat only','The boat moves because you pushed on it.']]]
+]);
+
+/* =====================================================================
+   The list of sets (append only, never reorder)
+   ===================================================================== */
+var SETS=[
+ {id:'newton2',name:'Newton’s Second Law',teks:'8.7A',grade:8,topics:[{id:'accel',name:'Find acceleration'},{id:'force',name:'Find force'},{id:'mass',name:'Find mass'},{id:'net',name:'Net force first'}],gen:{accel:gAccel,force:gForce,mass:gMass,net:gNet}},
+ {id:'atoms',name:'Count the Atoms',teks:'7.6B',grade:7,topics:[{id:'one',name:'One element'},{id:'total',name:'All atoms'},{id:'which',name:'Match the formula'}],gen:{one:gOne,total:gTotal,which:gWhich}},
+ {id:'elemclass',name:'Classify the Elements',teks:'6.6C',grade:6,topics:[{id:'class',name:'Name the class'},{id:'clues',name:'Property clues'}],gen:{'class':gClass,clues:gClues}},
+ {id:'chemchange',name:'Evidence of Chemical Change',teks:'6.6E',grade:6,topics:[{id:'evidence',name:'Name the clue'},{id:'decide',name:'Best evidence'}],gen:{evidence:gEvidence,decide:gDecide}},
+ {id:'forces',name:'Forces Around You',teks:'6.7A',grade:6,topics:[{id:'name',name:'Name the force'},{id:'real',name:'Real-world forces'}],gen:{name:gForceName,real:gForceReal}},
+ {id:'netforce',name:'Net Force',teks:'6.7B',grade:6,topics:[{id:'same',name:'Same direction'},{id:'opp',name:'Opposite directions'},{id:'three',name:'Three forces'},{id:'vertical',name:'Up and down'}],gen:{same:gNetSame,opp:gNetOpp,three:gNetThree,vertical:gNetVert}},
+ {id:'energy',name:'Energy Transfers',teks:'6.8B',grade:6,topics:[{id:'transform',name:'Energy changes'},{id:'coaster',name:'Coaster energy math'}],gen:{transform:gTransform,coaster:gCoaster}},
+ {id:'earthlayers',name:'Layers of Earth',teks:'6.10B',grade:6,topics:[{id:'clue',name:'Name the layer'},{id:'order',name:'Layer order'}],gen:{clue:gLayerClue,order:gLayerOrder}},
+ {id:'physchem',name:'Physical or Chemical?',teks:'7.6C',grade:7,topics:[{id:'chem',name:'Find the chemical change'},{id:'phys',name:'Find the physical change'},{id:'idea',name:'Big ideas'}],gen:{chem:gChemWhich,phys:gPhysWhich,idea:gChemIdea}},
+ {id:'speed',name:'Average Speed',teks:'7.7A',grade:7,topics:[{id:'speed',name:'Find speed'},{id:'distance',name:'Find distance'},{id:'time',name:'Find time'},{id:'trip',name:'Whole trip'}],gen:{speed:gSpeed,distance:gDist,time:gTime,trip:gTrip}},
+ {id:'dtgraph',name:'Distance-Time Graphs',teks:'7.7C',grade:7,topics:[{id:'speed',name:'Speed from a graph'},{id:'shape',name:'Describe the motion'},{id:'read',name:'Read a value'},{id:'compare',name:'Compare two objects'}],gen:{speed:gGraphSpeed,shape:gGraphShape,read:gGraphRead,compare:gGraphCompare}},
+ {id:'earthchange',name:'Earth Over Time',teks:'7.10A',grade:7,topics:[{id:'evidence',name:'Evidence of change'},{id:'layers',name:'Rock layers'}],gen:{evidence:gEvidenceBank,layers:gLayers}},
+ {id:'tectonics',name:'Plate Tectonics',teks:'7.10B',grade:7,topics:[{id:'boundary',name:'Boundaries'},{id:'result',name:'What it causes'}],gen:{boundary:gBoundary,result:gTectResult}},
+ {id:'matter',name:'Classify Matter',teks:'8.6A',grade:8,topics:[{id:'sub',name:'Name the matter'},{id:'model',name:'Particle models'},{id:'formula',name:'From a formula'}],gen:{sub:gSubstance,model:gMatterModel,formula:gMatterFormula}},
+ {id:'ptable',name:'Periodic Table and Reactions',teks:'8.6B',grade:8,topics:[{id:'symbol',name:'Symbols'},{id:'number',name:'Atomic numbers'},{id:'reactants',name:'Atoms in reactants'}],gen:{symbol:gSymbol,number:gAtomicNumber,reactants:gReactants}},
+ {id:'consmass',name:'Conservation of Mass',teks:'8.6E',grade:8,topics:[{id:'mass',name:'Mass math'},{id:'balance',name:'Balance equations'},{id:'count',name:'Count atoms'},{id:'closed',name:'Big ideas'}],gen:{mass:gMassCons,balance:gBalance,count:gAtomCount,closed:gClosed}},
+ {id:'newton3',name:'Newton’s Three Laws',teks:'8.7B',grade:8,topics:[{id:'which',name:'Which law?'},{id:'pair',name:'Action and reaction'}],gen:{which:gThreeLaws,pair:gForcePair}}
+];
+SETS.forEach(function(s){s.topicIds=s.topics.map(function(t){return t.id;});});
+function findSet(id){for(var i=0;i<SETS.length;i++)if(SETS[i].id===id)return i;return -1;}
+function make(set,topic){
+  for(var i=0;i<120;i++){var q=build(set.gen[topic]());if(q)return q;}
+  throw new Error('Could not build a question for '+set.id+'/'+topic);
+}
+function param(name){
+  try{if(typeof window!=='undefined'&&window.__SIKES_PARAMS&&window.__SIKES_PARAMS[name]!==undefined)return window.__SIKES_PARAMS[name];}catch(e){}
+  try{var m=(location.search||'').match(new RegExp('[?&]'+name+'=([^&]*)'));return m?decodeURIComponent(m[1]):'';}catch(e){return '';}
+}
+
+/* forGame('lh') -> null if the link names no set (unless options say which set) */
+function forGame(prefix,opt){
+  opt=opt||{};
+  var setId=opt.set||param('set');if(!setId)return null;
+  var idx=findSet(setId);if(idx<0)return null;
+  var set=SETS[idx];
+  var want=opt.topics||(param('topics')?param('topics').split(','):[]);
+  var tops=want.filter(function(t){return set.topicIds.indexOf(t)>=0;});
+  if(!tops.length)tops=set.topicIds.slice();
+  var mask=0;set.topicIds.forEach(function(t,i){if(tops.indexOf(t)>=0)mask|=(1<<i);});
+  var bag=[],recent=[];
+  var api={prefix:prefix,set:set,setIndex:idx,topics:tops,topicMask:mask,
+    next:function(){
+      var q,sig,tries=0;
+      do{
+        if(!bag.length)bag=shuffle(tops);
+        q=make(set,bag.pop());tries++;
+        sig=q.prompt+'|'+q.choices.filter(function(c){return c.ok;})[0].html;
+      }while(recent.indexOf(sig)>=0&&tries<40);
+      recent.push(sig);if(recent.length>10)recent.shift();
+      return q;},
+    short:function(maxLen){var q;
+      for(var i=0;i<200;i++){q=api.next();
+        if(q.choices.every(function(c){return plain(c.html).length<=maxLen;}))return q;}
+      return q;}};
+  return api;
+}
+
+/* fit test: generate many questions from every set/topic and report problems */
+function selftest(count){
+  var out=[],bad=0,maxPrompt=0,maxChoice=0,maxVisChoice=0,tot=0;
+  FORMULAS.forEach(function(x){
+    var p=parseF(x.f),ok=Object.keys(x.c).length===Object.keys(p).length&&Object.keys(x.c).every(function(k){return p[k]===x.c[k];});
+    if(!ok){bad++;out.push('Formula table mismatch: '+x.f);}
+  });
+  EQS.forEach(function(e,i){
+    var ok=eqElements(e).every(function(el){return sideCount(e.L,el)===sideCount(e.R,el);});
+    if(!ok){bad++;out.push('Equation not balanced: #'+i);}
+  });
+  SETS.forEach(function(s){s.topics.forEach(function(t){
+    var mx=0,n=0,fail=0,vis=0,seenPrompts={};
+    for(var i=0;i<count;i++){
+      try{var q=make(s,t.id);n++;tot++;
+        var oks=q.choices.filter(function(c){return c.ok;}).length;
+        if(q.choices.length!==4||oks!==1)fail++;
+        var keys={};
+        q.choices.forEach(function(c){var L=plain(c.html).length;keys[plain(c.html)]=1;if(L>mx)mx=L;if(q.visual&&L>maxVisChoice)maxVisChoice=L;
+          if(!c.ok&&!c.why)fail++;});
+        if(Object.keys(keys).length!==4)fail++;
+        if(q.visual){vis++;if(q.visual.indexOf('<svg')!==0)fail++;if(q.choices.some(function(c){return plain(c.html).length>12;}))fail++;}
+        if(plain(q.prompt).length>maxPrompt)maxPrompt=plain(q.prompt).length;
+        seenPrompts[q.prompt]=1;
+      }catch(e){fail++;out.push('  error in '+s.id+'/'+t.id+': '+e.message);}
+    }
+    if(mx>maxChoice)maxChoice=mx;bad+=fail;
+    out.push(s.teks+' '+s.id+' / '+t.id+': '+n+' qs, '+Object.keys(seenPrompts).length+' different prompts, '+fail+' problems, longest answer '+mx+(vis?', picture':''));
+  });});
+  out.push('Total '+tot+' questions. Longest prompt '+maxPrompt+' chars. Longest answer '+maxChoice+' chars. Longest picture answer '+maxVisChoice+' chars.');
+  out.push(bad===0?'ALL CLEAR':'PROBLEMS FOUND: '+bad);
+  return {ok:bad===0,lines:out,bad:bad};
+}
+return {SETS:SETS,forGame:forGame,selftest:selftest,parseF:parseF,plain:plain,findSet:findSet};
+})();
+if(typeof module!=='undefined')module.exports=SikesQ;
+
+</script>
+<script>
+var SikesCode=(function(){
+'use strict';
+var ALPHA='23456789ABCDEFGHJKLMNPQRSTUVWXYZ';          // 32 characters, no I O 0 1
+var SALT='sikes-arcade-v1';
+var GAMES={lh:1,mg:2,cs:3,bb:4,sn:5,fi:6,bk:7};                                         // game number by id (append only)
+var FIELDS=[['ver',4],['game',6],['set',5],['topics',6],['run',5],['day',11],['score',12],['correct',7],['answered',7]];
+var EPOCH=Date.UTC(2026,0,1);
+function normName(n){return String(n||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');}
+function seal(payload,name){
+  var s=payload.toString(36)+'|'+normName(name)+'|'+SALT,h=0x811c9dc5;
+  for(var i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,0x01000193);}
+  h^=h>>>15;h=Math.imul(h,0x2c1b3c6d);h^=h>>>12;
+  return h&0x1FFFF;
+}
+function encode(f,name){
+  var v=0n;
+  FIELDS.forEach(function(x){var bits=x[1],val=Math.max(0,Math.min((1<<bits)-1,Math.floor(f[x[0]]||0)));v=(v<<BigInt(bits))|BigInt(val);});
+  var full=(v<<17n)|BigInt(seal(v,name)),s='';
+  for(var i=0;i<16;i++){s=ALPHA[Number(full&31n)]+s;full>>=5n;}
+  return s;
+}
+function decode(code,name){
+  var c=String(code||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+  if(c.length!==16)return {ok:false};
+  var full=0n;
+  for(var i=0;i<16;i++){var k=ALPHA.indexOf(c[i]);if(k<0)return {ok:false};full=(full<<5n)|BigInt(k);}
+  var sealBits=Number(full&0x1FFFFn),v=full>>17n,out={ok:false},rest=v;
+  for(var j=FIELDS.length-1;j>=0;j--){var b=FIELDS[j][1];out[FIELDS[j][0]]=Number(rest&((1n<<BigInt(b))-1n));rest>>=BigInt(b);}
+  out.ok=(seal(v,name)===sealBits);
+  out.date=new Date(EPOCH+out.day*86400000);
+  return out;
+}
+function fmtCode(c){return c.replace(/(.{4})(?=.)/g,'$1-');}
+/* S = {name, score, correct, answered, setIndex, topicMask, runSec} */
+function make(gameId,S){
+  var day=Math.floor((Date.now()-EPOCH)/86400000);
+  return fmtCode(encode({ver:1,game:GAMES[gameId]||0,set:S.setIndex,topics:S.topicMask,
+    run:Math.round((S.runSec||240)/15),day:day,score:S.score,correct:S.correct,answered:S.answered},S.name));
+}
+function show(prefix,gameId,S){
+  var code=make(gameId,S),el=document.getElementById(prefix+'-code');
+  if(el)el.textContent=code;
+  return code;
+}
+return {make:make,show:show,decode:decode,encode:encode,normName:normName,GAMES:GAMES};
+})();
+
+</script>
+<script>
+/* =====================================================================
+   Game catalog for Sikes Arcade (games/catalog.js)
+   One entry per game. The hub page builds its game cards from this list.
+   ===================================================================== */
+var SikesCatalog=[
+ {id:'lh',file:'lab_hoops.html',name:'Lab Hoops',desc:'Answer to earn shots against a robot rival.',
+  colors:['#0a1124','#ff8a3d','#38d6ff'],
+  art:'<svg viewBox="0 0 200 110" xmlns="http://www.w3.org/2000/svg"><rect width="200" height="110" fill="#0a1124"/><rect y="88" width="200" height="22" fill="#8a5a2c"/>'+
+   '<rect x="150" y="14" width="8" height="46" fill="#c9d6ff"/><rect x="146" y="30" width="4" height="14" fill="#ff8a3d"/><line x1="108" y1="52" x2="148" y2="52" stroke="#ff8a3d" stroke-width="4"/>'+
+   '<path d="M112 54 L120 72 M124 54 L124 72 M136 54 L128 72 M148 54 L132 72" stroke="#eef3ff" stroke-width="1.5" fill="none"/>'+
+   '<path d="M30 80 Q70 -10 118 48" stroke="#ffffff" stroke-width="2" stroke-dasharray="4 5" fill="none"/><circle cx="118" cy="44" r="9" fill="#ff8a3d"/>'+
+   '<circle cx="30" cy="62" r="8" fill="#f2c7a0"/><rect x="22" y="70" width="16" height="22" rx="6" fill="#38d6ff"/></svg>'},
+ {id:'mg',file:'mini_golf.html',name:'Birdie Lab',desc:'Earn strokes and sink the putts.',
+  colors:['#06110f','#6df0a0','#b78bff'],
+  art:'<svg viewBox="0 0 200 110" xmlns="http://www.w3.org/2000/svg"><rect width="200" height="110" fill="#06110f"/><rect x="12" y="12" width="176" height="86" rx="6" fill="#17803f" stroke="#8c6b3c" stroke-width="5"/>'+
+   '<rect x="86" y="30" width="12" height="50" fill="#b98a52"/><rect x="40" y="62" width="30" height="18" fill="#d9c27a"/>'+
+   '<circle cx="158" cy="52" r="8" fill="#050807"/><line x1="158" y1="52" x2="158" y2="26" stroke="#e9f6ee" stroke-width="2"/><path d="M158 26 L172 31 L158 36z" fill="#ff5d73"/>'+
+   '<line x1="34" y1="44" x2="78" y2="30" stroke="#ffffff" stroke-width="2.5" stroke-dasharray="5 4"/><circle cx="30" cy="46" r="6" fill="#fff"/></svg>'},
+ {id:'cs',file:'car_soccer.html',name:'Turbo Lab',desc:'Answer to fill your boost and score goals.',
+  colors:['#070a14','#ff9f43','#4de2ff'],
+  art:'<svg viewBox="0 0 200 110" xmlns="http://www.w3.org/2000/svg"><rect width="200" height="110" fill="#070a14"/><rect y="86" width="200" height="24" fill="#10223f"/><rect y="84" width="200" height="4" fill="#2f5fb0"/>'+
+   '<rect x="0" y="48" width="14" height="38" fill="#ff9f43" opacity=".4"/><rect x="186" y="48" width="14" height="38" fill="#ff9f43" opacity=".4"/>'+
+   '<path d="M34 82 L34 70 L50 68 L58 56 L78 56 L86 68 L96 70 L96 82z" fill="#2cc4f0"/><circle cx="48" cy="82" r="8" fill="#0a0f1e"/><circle cx="84" cy="82" r="8" fill="#0a0f1e"/>'+
+   '<path d="M30 74 L10 70 L30 78z" fill="#ffaa3c"/><circle cx="136" cy="68" r="18" fill="#f4f7ff"/><path d="M136 58 L144 64 L141 74 L131 74 L128 64z" fill="#22305e"/>'+
+   '<path d="M120 82 L172 82 L172 74 L160 74 L160 70 L150 70 L150 74 L120 74z" fill="#ff5d73" opacity="0"/></svg>'},
+ {id:'bb',file:'burger_blaster.html',name:'Burger Blaster',desc:'Load burgers and feed the hungry line.',
+  colors:['#140a10','#ffb13b','#ff7ab0'],
+  art:'<svg viewBox="0 0 200 110" xmlns="http://www.w3.org/2000/svg"><rect width="200" height="110" fill="#1b0c1f"/><rect y="88" width="200" height="22" fill="#4a2a22"/>'+
+   '<rect x="6" y="40" width="40" height="48" fill="#7a2f3f"/><rect x="6" y="32" width="40" height="10" fill="#ffcf5a"/>'+
+   '<rect x="40" y="70" width="34" height="14" rx="4" fill="#ffb13b" transform="rotate(-28 40 77)"/>'+
+   '<path d="M82 40 Q118 6 156 62" stroke="#ffffff" stroke-width="2" stroke-dasharray="4 5" fill="none"/>'+
+   '<ellipse cx="124" cy="30" rx="11" ry="7" fill="#e0953b"/><rect x="113" y="31" width="22" height="3" fill="#6fcf4f"/><rect x="114" y="34" width="20" height="4" fill="#6a2d1a"/><ellipse cx="124" cy="42" rx="10" ry="5" fill="#e0953b"/>'+
+   '<circle cx="164" cy="68" r="20" fill="#ff8fb1"/><circle cx="157" cy="63" r="2.5" fill="#1b0c1f"/><circle cx="171" cy="63" r="2.5" fill="#1b0c1f"/><ellipse cx="164" cy="75" rx="5" ry="6" fill="none" stroke="#1b0c1f" stroke-width="2"/></svg>'},
+ {id:'sn',file:'snake_lab.html',name:'Snake Lab',desc:'Answer for shields and golden apples.',
+  colors:['#07110a','#9bff5a','#ff5fa8'],
+  art:'<svg viewBox="0 0 200 110" xmlns="http://www.w3.org/2000/svg"><rect width="200" height="110" fill="#0a2014"/>'+
+   '<g fill="#10331e"><rect x="0" y="0" width="200" height="110" opacity="0"/></g>'+
+   '<path d="M24 80 H90 V40 H140 V70 H172" stroke="#5fcf3a" stroke-width="16" fill="none" stroke-linejoin="round" stroke-linecap="round"/>'+
+   '<circle cx="172" cy="70" r="11" fill="#b7ff8a"/><circle cx="176" cy="66" r="2.5" fill="#0a1a0e"/><circle cx="176" cy="75" r="2.5" fill="#0a1a0e"/>'+
+   '<circle cx="40" cy="28" r="9" fill="#ff4d6d"/><path d="M148 16 l4 9 10 1 -8 6 3 10 -9 -6 -9 6 3 -10 -8 -6 10 -1z" fill="#ffcf5a"/>'+
+   '<path d="M24 20 H60" stroke="#ff6b81" stroke-width="10" stroke-linecap="round" opacity="0"/></svg>'},
+ {id:'fi',file:'fishing.html',name:'Reel Lab',desc:'Earn casts and reel in the big ones.',
+  colors:['#050b18','#4fd8ff','#ffd36b'],
+  art:'<svg viewBox="0 0 200 110" xmlns="http://www.w3.org/2000/svg"><rect width="200" height="110" fill="#050a1c"/><rect y="36" width="200" height="74" fill="#12507e"/>'+
+   '<circle cx="168" cy="16" r="9" fill="#f4f0d6"/><path d="M60 30 L120 30 L110 40 L70 40z" fill="#8b5a2b"/><line x1="100" y1="30" x2="124" y2="8" stroke="#d9b87a" stroke-width="2"/>'+
+   '<line x1="124" y1="8" x2="124" y2="74" stroke="#fff" stroke-width="1.2"/><path d="M121 76 a4 4 0 1 0 6 -2" stroke="#fff" stroke-width="2" fill="none"/>'+
+   '<ellipse cx="58" cy="82" rx="18" ry="10" fill="#ffcf5a"/><path d="M40 82 L28 74 L28 90z" fill="#ffcf5a"/><circle cx="68" cy="79" r="2" fill="#07101e"/>'+
+   '<ellipse cx="150" cy="60" rx="12" ry="7" fill="#7ee8fa"/><path d="M162 60 L172 54 L172 66z" fill="#7ee8fa"/></svg>'},
+ {id:'bk',file:'brick_breaker.html',name:'Brick Lab',desc:'Earn power-ups and smash every brick.',
+  colors:['#0a0716','#ff6bd6','#6df0ff'],
+  art:'<svg viewBox="0 0 200 110" xmlns="http://www.w3.org/2000/svg"><rect width="200" height="110" fill="#120a2a"/>'+
+   '<g><rect x="12" y="10" width="34" height="12" fill="#ff6b81"/><rect x="50" y="10" width="34" height="12" fill="#ff6b81"/><rect x="88" y="10" width="34" height="12" fill="#ff6b81"/><rect x="126" y="10" width="34" height="12" fill="#ff6b81"/><rect x="164" y="10" width="24" height="12" fill="#ff6b81"/>'+
+   '<rect x="12" y="26" width="34" height="12" fill="#ffd36b"/><rect x="50" y="26" width="34" height="12" fill="#ffd36b"/><rect x="126" y="26" width="34" height="12" fill="#ffd36b"/><rect x="164" y="26" width="24" height="12" fill="#ffd36b"/>'+
+   '<rect x="12" y="42" width="34" height="12" fill="#6df0a0"/><rect x="164" y="42" width="24" height="12" fill="#6df0a0"/></g>'+
+   '<circle cx="104" cy="66" r="6" fill="#fff"/><path d="M104 66 L84 92" stroke="#fff" stroke-width="2" stroke-dasharray="3 4"/><rect x="62" y="96" width="62" height="7" rx="3" fill="#ff6bd6"/></svg>'}
+];
+
+</script>
+<script>
+(function(){
+'use strict';
+var SETS=SikesQ.SETS,CAT=SikesCatalog,NUM2ID={};
+Object.keys(SikesCode.GAMES).forEach(function(k){NUM2ID[SikesCode.GAMES[k]]=k;});
+function gameName(id){var g=CAT.filter(function(x){return x.id===id;})[0];return g?g.name:id;}
+function $(id){return document.getElementById(id);}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+var store={get:function(k){try{return localStorage.getItem(k);}catch(e){return null;}},set:function(k,v){try{localStorage.setItem(k,v);}catch(e){}}};
+var ALPHA='23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
+var approved={},edits={};
+try{approved=JSON.parse(store.get('sikes_t_ok')||'{}')||{};edits=JSON.parse(store.get('sikes_t_names')||'{}')||{};}catch(e){}
+var rows=[];
+
+/* ----- reading pasted rows (tab separated from Sheets, or comma separated) ----- */
+function splitCSV(line){
+  var out=[],cur='',q=false;
+  for(var i=0;i<line.length;i++){var ch=line[i];
+    if(q){if(ch==='"'){if(line[i+1]==='"'){cur+='"';i++;}else q=false;}else cur+=ch;}
+    else if(ch==='"')q=true;else if(ch===','){out.push(cur);cur='';}else cur+=ch;}
+  out.push(cur);return out;
+}
+function cleanCode(s){return String(s).toUpperCase().replace(/[^A-Z0-9]/g,'');}
+function looksLikeCode(s){var c=cleanCode(s);if(c.length!==16)return false;for(var i=0;i<16;i++)if(ALPHA.indexOf(c[i])<0)return false;return true;}
+function isStamp(s){return /^\s*\d{1,4}[\/\-]\d{1,2}[\/\-]\d{1,4}/.test(s)||/\d{1,2}:\d{2}/.test(s);}
+function parse(text){
+  var out=[],skipped=0,seen={};
+  text.split(/\r?\n/).forEach(function(line){
+    if(!line.trim())return;
+    var f=(line.indexOf('\t')>=0?line.split('\t'):splitCSV(line)).map(function(x){return x.trim();}).filter(function(x){return x.length;});
+    if(!f.length)return;
+    if(/timestamp/i.test(line)&&!f.some(looksLikeCode)){skipped++;return;}       // header row
+    var codes=f.filter(looksLikeCode),names=f.filter(function(x){return !looksLikeCode(x)&&!isStamp(x)&&/[A-Za-z]/.test(x);});
+    var row={raw:line,name:names[0]||'',code:codes[0]?cleanCode(codes[0]):'',valid:false,why:''};
+    if(!row.code){row.why='No score code found in this row';out.push(row);return;}
+    var res=null;
+    for(var i=0;i<names.length&&!res;i++){var d=SikesCode.decode(row.code,names[i]);if(d.ok){res=d;row.name=names[i];}}
+    if(!res){row.why='Code doesn’t match the name';out.push(row);return;}
+    var gid=NUM2ID[res.game],set=SETS[res.set];
+    if(!gid||!set||res.answered<1||res.correct>res.answered||res.ver!==1){row.why='Code looks wrong';out.push(row);return;}
+    row.info={game:gid,set:set,score:res.score,correct:res.correct,answered:res.answered,date:res.date};
+    row.valid=true;
+    if(seen[row.code]){row.valid=false;row.why='Duplicate: this code was already listed';}
+    seen[row.code]=true;
+    out.push(row);
+  });
+  return {rows:out,skipped:skipped};
+}
+function keyOf(r){return SikesCode.normName(r.name)+'|'+r.code;}
+function shownName(r){return edits[keyOf(r)]!==undefined?edits[keyOf(r)]:r.name;}
+function fmtDate(d){return d.toISOString().slice(0,10);}
+
+/* ----- table ----- */
+function render(){
+  var tb=$('tbl').querySelector('tbody');tb.innerHTML='';
+  rows.forEach(function(r,i){
+    var tr=document.createElement('tr');if(!r.valid)tr.className='bad';
+    if(r.valid){
+      var k=keyOf(r);
+      tr.innerHTML='<td><input type="checkbox" '+(approved[k]?'checked':'')+' data-k="'+esc(k)+'"></td>'+
+        '<td><input class="nm" value="'+esc(shownName(r))+'" data-e="'+esc(k)+'" maxlength="24"></td>'+
+        '<td>'+esc(gameName(r.info.game))+'</td><td>'+esc(r.info.set.name)+' <span class="pill">'+r.info.set.teks+'</span></td>'+
+        '<td><b>'+r.info.score+'</b></td><td>'+r.info.correct+'/'+r.info.answered+' ('+Math.round(100*r.info.correct/r.info.answered)+'%)</td>'+
+        '<td>'+fmtDate(r.info.date)+'</td><td class="ok">✓ Matches</td>';
+    }else{
+      tr.innerHTML='<td></td><td>'+esc(r.name||'(no name)')+'</td><td colspan="5" class="note">'+esc(r.code?r.code.replace(/(.{4})(?=.)/g,'$1-'):'')+'</td><td class="no">✗ '+esc(r.why)+'</td>';
+    }
+    tb.appendChild(tr);
+  });
+  tb.querySelectorAll('input[type=checkbox]').forEach(function(c){c.addEventListener('change',function(){approved[this.getAttribute('data-k')]=this.checked;store.set('sikes_t_ok',JSON.stringify(approved));summary();});});
+  tb.querySelectorAll('input.nm').forEach(function(c){c.addEventListener('input',function(){edits[this.getAttribute('data-e')]=this.value;store.set('sikes_t_names',JSON.stringify(edits));summary();});});
+  summary();
+}
+
+/* ----- the leaderboard file ----- */
+function build(){
+  var best={};
+  rows.forEach(function(r){
+    if(!r.valid||!approved[keyOf(r)])return;
+    var nm=shownName(r).trim();if(!nm)return;
+    var gk=r.info.game+'|'+SikesCode.normName(nm),acc=r.info.correct/r.info.answered;
+    var cur=best[gk];
+    if(!cur||r.info.score>cur.score||(r.info.score===cur.score&&acc>cur.correct/cur.answered)){
+      best[gk]={game:r.info.game,name:nm,score:r.info.score,correct:r.info.correct,answered:r.info.answered,
+        set:r.info.set.id,skill:r.info.set.name+' ('+r.info.set.teks+')',date:fmtDate(r.info.date)};
+    }
+  });
+  var games={},skills={},bestSkill={};
+  rows.forEach(function(r){
+    if(!r.valid||!approved[keyOf(r)])return;
+    var nm=shownName(r).trim();if(!nm)return;
+    var sk=r.info.game+'|'+r.info.set.id+'|'+SikesCode.normName(nm),acc=r.info.correct/r.info.answered,cur=bestSkill[sk];
+    if(!cur||r.info.score>cur.score||(r.info.score===cur.score&&acc>cur.correct/cur.answered)){
+      bestSkill[sk]={game:r.info.game,name:nm,score:r.info.score,correct:r.info.correct,answered:r.info.answered,
+        set:r.info.set.id,skill:r.info.set.name+' ('+r.info.set.teks+')',date:fmtDate(r.info.date)};
+    }
+  });
+  Object.keys(bestSkill).forEach(function(k){var b=bestSkill[k];((skills[b.game]=skills[b.game]||{})[b.set]=skills[b.game][b.set]||[]).push(b);});
+  Object.keys(skills).forEach(function(g){Object.keys(skills[g]).forEach(function(s){
+    skills[g][s].sort(function(a,b){return b.score-a.score||(b.correct/b.answered)-(a.correct/a.answered);});
+    skills[g][s]=skills[g][s].slice(0,10).map(function(b){return {name:b.name,score:b.score,correct:b.correct,answered:b.answered,set:b.set,skill:b.skill,date:b.date};});
+  });});
+  Object.keys(best).forEach(function(k){var b=best[k];(games[b.game]=games[b.game]||[]).push(b);});
+  Object.keys(games).forEach(function(g){
+    games[g].sort(function(a,b){return b.score-a.score||(b.correct/b.answered)-(a.correct/a.answered);});
+    games[g]=games[g].slice(0,10).map(function(b){return {name:b.name,score:b.score,correct:b.correct,answered:b.answered,set:b.set,skill:b.skill,date:b.date};});
+  });
+  return {updated:new Date().toISOString(),games:games,skills:skills};
+}
+function summary(){
+  var valid=rows.filter(function(r){return r.valid;}).length,on=rows.filter(function(r){return r.valid&&approved[keyOf(r)];}).length;
+  $('count-note').textContent=rows.length?(valid+' of '+rows.length+' rows have a matching code · '+on+' ticked'):'';
+  var data=build(),box=$('boards');box.innerHTML='';
+  CAT.forEach(function(g){
+    var list=data.games[g.id]||[],div=document.createElement('div');div.className='card b';
+    div.innerHTML='<h3>'+esc(g.name)+'</h3>'+(list.length?'<ol>'+list.map(function(x){return '<li><b>'+esc(x.name)+'</b> · '+x.score+' pts · '+Math.round(100*x.correct/x.answered)+'% · '+esc(x.skill)+'</li>';}).join('')+'</ol>':'<span class="note">No approved scores yet.</span>');
+    box.appendChild(div);
+  });
+}
+function check(){
+  var text=$('paste').value;store.set('sikes_t_paste',text);
+  var p=parse(text);rows=p.rows;
+  $('read-note').textContent=text.trim()?('Read '+rows.length+' row'+(rows.length===1?'':'s')+(p.skipped?' (header row skipped)':'')):'';
+  render();
+}
+function saveFile(name,text){
+  var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type:'text/javascript'}));a.download=name;
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+}
+function download(){
+  saveFile('leaderboard.js','window.__LB_DATA='+JSON.stringify(build(),null,2)+';\n');
+  $('json-note').textContent='Downloaded. Now upload it to your GitHub repository, replacing the old leaderboard.js.';
+}
+function copyJson(){
+  var json='window.__LB_DATA='+JSON.stringify(build(),null,2)+';\n';
+  function done(){$('json-note').textContent='Copied.';}
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(json).then(done,function(){});else{var t=document.createElement('textarea');t.value=json;document.body.appendChild(t);t.select();try{document.execCommand('copy');done();}catch(e){}document.body.removeChild(t);}
+}
+
+/* ----- practice data so you can see how it works (made-up students) ----- */
+function demo(){
+  var kids=['Alex R','Maya T','Jordan P','Sam L','Riley C','Dev K'],lines=['Timestamp\tName\tScore code'],ids=['lh','mg','cs','bb'];
+  var day=new Date();
+  function code(n,gid,set,score,c,a){return SikesCode.make(gid,{name:n,score:score,correct:c,answered:a,setIndex:set,topicMask:7,runSec:240});}
+  kids.forEach(function(n,i){
+    var gid=ids[i%4],set=(i*3)%SETS.length,a=20+i*2,c=Math.round(a*(0.6+0.05*i)),score=30+i*9;
+    lines.push((day.getMonth()+1)+'/'+day.getDate()+'/'+day.getFullYear()+' 10:'+(10+i)+':00\t'+n+'\t'+code(n,gid,set,score,c,a));
+  });
+  lines.push('10/22/2026 10:30:00\tmaya t\t'+code('Maya T','lh',1,55,24,26));             // same student, second game, lowercase name still matches
+  lines.push('10/22/2026 10:31:00\tChris B\t'+code('Pat Q','cs',2,40,20,25));              // code earned under a different name
+  lines.push('10/22/2026 10:32:00\tSam L\tA2B4-C6D8-E2F4-G6H8');                         // not a real code
+  $('paste').value=lines.join('\n');check();
+}
+$('btn-check').addEventListener('click',check);
+$('btn-demo').addEventListener('click',demo);
+$('btn-clear').addEventListener('click',function(){$('paste').value='';store.set('sikes_t_paste','');check();});
+$('btn-allvalid').addEventListener('click',function(){rows.forEach(function(r){if(r.valid)approved[keyOf(r)]=true;});store.set('sikes_t_ok',JSON.stringify(approved));render();});
+$('btn-none').addEventListener('click',function(){rows.forEach(function(r){if(r.valid)approved[keyOf(r)]=false;});store.set('sikes_t_ok',JSON.stringify(approved));render();});
+$('btn-json').addEventListener('click',download);
+$('btn-copyjson').addEventListener('click',copyJson);
+$('formurl').value=(window.SIKES_SETTINGS&&window.SIKES_SETTINGS.formUrl)||store.get('sikes_t_form')||'';
+$('btn-settings').addEventListener('click',function(){
+  var u=$('formurl').value.trim();
+  if(u&&!/^https:\/\//i.test(u)){$('set-note').textContent='The link should start with https://';return;}
+  store.set('sikes_t_form',u);
+  saveFile('settings.js','window.SIKES_SETTINGS='+JSON.stringify({formUrl:u})+';\n');
+  $('set-note').textContent='Downloaded. Upload settings.js to GitHub, replacing the old one.';
+});
+$('paste').value=store.get('sikes_t_paste')||'';
+check();
+window.__T={parse:parse,build:build,getRows:function(){return rows;},approve:function(r){approved[keyOf(r)]=true;}};
+})();
+</script>
+</body>
+</html>
