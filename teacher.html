@@ -992,6 +992,537 @@ var gForcePair=bankGen('pair',[
 ]);
 
 /* =====================================================================
+   NEW SETS 17-26 (added later): 6.9A, 6.9B, 7.8A, 7.8C, 8.8A, 8.9A, 8.9B, 8.10A, 8.10B, 8.10C
+   ===================================================================== */
+function f1(n){return (Math.round(n*10)/10).toFixed(1);}
+function gauss(){return (Math.random()+Math.random()+Math.random()-1.5)/1.5;}
+function tipH(x,y,dir,col){return '<polygon points="'+f1(x)+','+f1(y)+' '+f1(x-dir*10)+','+f1(y-5)+' '+f1(x-dir*10)+','+f1(y+5)+'" fill="'+col+'"/>';}
+function tipV(x,y,dir,col){return '<polygon points="'+f1(x)+','+f1(y)+' '+f1(x-5)+','+f1(y-dir*10)+' '+f1(x+5)+','+f1(y-dir*10)+'" fill="'+col+'"/>';}
+
+/* ---------- SET 17: Earth's Seasons (6.9A) ---------- */
+var gSeasonCause=bankGen('cause',[
+ ['What causes the seasons on Earth?','Earth\u2019s axis is tilted as Earth revolves around the Sun','Earth\u2019s axis is tilted about 23.5\u00b0. As Earth orbits the Sun, each hemisphere takes turns leaning toward the Sun (summer) and away from it (winter).',
+  [['Earth moves much closer to the Sun in summer','Earth\u2019s distance from the Sun changes only a little. Earth is actually closest to the Sun in early January.'],['The Sun gives off more energy in summer','The Sun\u2019s energy output stays nearly the same all year.'],['Earth spins faster in summer','Earth spins once every 24 hours all year long.']]],
+ ['It is summer in Texas. Why is it warmer than in winter?','Texas gets more direct sunlight because the north leans toward the Sun','In summer the Northern Hemisphere leans toward the Sun. Sunlight hits at a steeper angle and daylight lasts longer, so more energy arrives.',
+  [['Texas moves closer to the Sun each summer','Earth\u2019s distance from the Sun is not the cause of the seasons.'],['Earth\u2019s tilt disappears in summer','Earth\u2019s tilt stays about 23.5\u00b0 all year.'],['The Moon blocks less sunlight in summer','The Moon does not control the seasons.']]],
+ ['Which statement about Earth\u2019s axis is correct?','It stays tilted toward the same spot in space as Earth orbits the Sun','The axis always points toward the same place in space. What changes is which hemisphere leans toward the Sun.',
+  [['It always points toward the Sun','The axis points toward the same place in space, not toward the Sun.'],['It tilts back and forth every month','The tilt stays the same all year.'],['It is straight up and down with no tilt','Earth\u2019s axis is tilted about 23.5\u00b0.']]],
+ ['What would happen to the seasons if Earth\u2019s axis had no tilt?','There would be almost no seasons','Without a tilt, sunlight would hit each place at about the same angle all year, so temperatures would stay about the same.',
+  [['The seasons would be much more extreme','Without a tilt, the seasons would fade away.'],['Summer would last all year in the Northern Hemisphere','Without a tilt, no hemisphere leans toward the Sun.'],['The seasons would switch every week','There would be no yearly swing between warm and cold.']]],
+ ['During the June solstice, which statement is true?','The Northern Hemisphere is tilted toward the Sun','In June the north pole leans toward the Sun, so the Northern Hemisphere has summer. The Southern Hemisphere has winter.',
+  [['The Southern Hemisphere is tilted toward the Sun','That happens in December. In June the Southern Hemisphere leans away.'],['Earth is at its closest point to the Sun','Earth is closest to the Sun in early January.'],['Day and night are equal everywhere','That happens near the equinoxes in March and September.']]],
+ ['About how long does Earth take to revolve once around the Sun?','About 365 days (one year)','One revolution around the Sun takes about 365 days. One rotation on its axis takes about 24 hours.',
+  [['About 24 hours','That is one rotation, not one revolution.'],['About 30 days','That is about how long the Moon takes to orbit Earth.'],['About 12 hours','Earth\u2019s orbit takes much longer than that.']]],
+ ['Why are the seasons opposite in the Northern and Southern Hemispheres?','When one hemisphere leans toward the Sun, the other leans away','The tilt makes one hemisphere receive more direct sunlight while the other receives less.',
+  [['The Southern Hemisphere is much farther from the Sun','Both hemispheres are about the same distance from the Sun.'],['The Southern Hemisphere spins the other way','All of Earth spins in the same direction.'],['The Moon pulls the Southern Hemisphere away from the Sun','The Moon does not cause the seasons.']]]
+]);
+var gSeasonHemi=labelGen('hemi',[
+ ['It is winter in the Northern Hemisphere. What season is it in the Southern Hemisphere?','Summer','When the Northern Hemisphere leans away from the Sun, the Southern Hemisphere leans toward it.'],
+ ['It is summer in Texas. What season is it in Australia?','Winter','Texas is in the Northern Hemisphere and Australia is in the Southern Hemisphere, so the seasons are opposite.'],
+ ['It is spring in the Northern Hemisphere. What season is it in the Southern Hemisphere?','Fall','The seasons are opposite, so spring in the north is fall in the south.'],
+ ['It is fall in the Northern Hemisphere. What season is it in the Southern Hemisphere?','Spring','The seasons are opposite, so fall in the north is spring in the south.'],
+ ['It is July in the United States. What season is it in Chile?','Winter','Chile is in the Southern Hemisphere, so July is winter there.'],
+ ['It is December in Texas. What season is it in Argentina?','Summer','Argentina is in the Southern Hemisphere, so December is summer there.']
+],['Summer','Fall','Winter','Spring'],function(l){return 'That isn\u2019t the opposite season. The two hemispheres always have opposite seasons.';},'');
+function orbitSVG(L){
+  var s=svgOpen(),cx=190,cy=190,R=130,P=[[cx-R,cy],[cx,cy-R],[cx+R,cy],[cx,cy+R]],i,t=23.5*Math.PI/180,dx=Math.sin(t),dy=-Math.cos(t);
+  s+='<circle cx="190" cy="190" r="130" fill="none" stroke="#2b3d7a" stroke-width="3" stroke-dasharray="7 7"/>';
+  s+='<circle cx="190" cy="190" r="30" fill="#ffcf5a"/><text x="190" y="196" fill="#3a2a00" text-anchor="middle" font-size="17">Sun</text>';
+  for(i=0;i<4;i++){
+    var x=P[i][0],y=P[i][1],ux=(x-cx)/R,uy=(y-cy)/R;
+    s+='<line x1="'+f1(x-dx*38)+'" y1="'+f1(y-dy*38)+'" x2="'+f1(x+dx*38)+'" y2="'+f1(y+dy*38)+'" stroke="#9db0d6" stroke-width="3"/>';
+    s+='<circle cx="'+x+'" cy="'+y+'" r="22" fill="#2f6fd0" stroke="#bfe0ff" stroke-width="2"/>';
+    s+='<text x="'+f1(x+dx*38+6)+'" y="'+f1(y+dy*38-2)+'" fill="#ff8a3d" font-size="16">N</text>';
+    s+='<text x="'+f1(x+ux*50)+'" y="'+f1(y+uy*50+7)+'" fill="#eef3ff" text-anchor="middle" font-size="22">'+L[i]+'</text>';
+  }
+  return s+'</svg>';
+}
+function gSeasonOrbit(){
+  var L=shuffle(['A','B','C','D']),M=pick([{h:'Northern',s:'summer',i:0},{h:'Northern',s:'winter',i:2},{h:'Southern',s:'summer',i:2},{h:'Southern',s:'winter',i:0}]);
+  var right='Position '+L[M.i],opp=M.i===0?2:0,wr=[];
+  [0,1,2,3].forEach(function(i){
+    if(i===M.i)return;
+    var why=(i===opp)?('Here the '+M.h+' Hemisphere leans '+(M.s==='summer'?'away from':'toward')+' the Sun, so it is '+(M.s==='summer'?'winter':'summer')+' there.')
+      :'At this position the axis leans sideways, not toward or away from the Sun, so it is spring or fall.';
+    wr.push({val:'Position '+L[i],html:'Position '+L[i],why:why});
+  });
+  var nTow=(M.i===0);
+  return {topic:'orbit',prompt:'Earth is shown at four places in its orbit. The north pole is marked <b>N</b>. At which position is it <b>'+M.s+'</b> in the <b>'+M.h+' Hemisphere</b>?',visual:orbitSVG(L),
+    correct:{val:right,html:right},wrongs:wr,check:function(v){return v===right;},
+    explain:'The axis always leans the same way. At <b>'+right+'</b> the north pole leans '+(nTow?'toward':'away from')+' the Sun, so the Northern Hemisphere has '+(nTow?'summer':'winter')+' and the Southern Hemisphere has '+(nTow?'winter':'summer')+'.'};
+}
+
+/* ---------- SET 18: Ocean Tides (6.9B) ---------- */
+var gTideCause=bankGen('cause',[
+ ['What is the main cause of ocean tides?','The gravitational pull of the Moon and the Sun on Earth\u2019s oceans','The Moon\u2019s gravity pulls most strongly on the ocean water, and the Sun\u2019s gravity adds a smaller pull.',
+  [['Wind blowing across the ocean surface','Wind makes waves, but it does not cause the regular rise and fall of tides.'],['Warm ocean currents moving toward the shore','Currents move water around the ocean, but they do not cause tides.'],['Earth\u2019s magnetic field pulling on the water','Earth\u2019s magnetic field does not make tides. Gravity does.']]],
+ ['Why does the Moon have a bigger effect on tides than the Sun, even though the Sun is far more massive?','The Moon is much closer to Earth','Gravity gets weaker with distance. The Moon is so close that its pull on the oceans is stronger than the Sun\u2019s.',
+  [['The Moon is larger than the Sun','The Sun is much larger than the Moon.'],['The Sun\u2019s gravity does not reach Earth','The Sun\u2019s gravity holds Earth in orbit, so it does reach Earth.'],['The Moon is made of heavier material','What the Moon is made of does not explain it. Distance does.']]],
+ ['How many tidal bulges does the Moon\u2019s gravity make in Earth\u2019s oceans at one time?','Two: one facing the Moon and one on the opposite side','Water bulges toward the Moon and also on the far side of Earth. As Earth rotates, a coastline passes through both bulges.',
+  [['One, facing the Moon only','There is also a bulge on the opposite side of Earth.'],['Three, spread evenly around Earth','There are two bulges, lined up with the Moon.'],['None, because tides are only caused by wind','Tides are caused by gravity.']]],
+ ['A beach has a high tide and a low tide each day. What causes this daily pattern?','Earth rotates through the tidal bulges made by the Moon and Sun','As Earth spins, the coast moves into a bulge (high tide) and then out of it (low tide).',
+  [['The Moon circles the beach once an hour','The Moon takes about a month to orbit Earth.'],['The ocean fills and empties like a bathtub','Water is not being added and removed. It is pulled by gravity.'],['Wind blows the water in and out each day','Wind does not make the regular daily tide.']]],
+ ['Which statement about tides is true?','They are caused by gravity and follow a regular, predictable pattern','Because the Moon, Sun, and Earth move in regular patterns, tides can be predicted far ahead.',
+  [['They happen at random times','Tides follow a pattern, so they can be predicted.'],['They are caused mainly by storms','Storms can raise the water, but normal tides are caused by gravity.'],['They only happen in the Atlantic Ocean','All of Earth\u2019s oceans have tides, including the Gulf of Mexico.']]]
+]);
+var gSpringNeap=bankGen('springneap',[
+ ['During a new moon, the Sun, Earth, and Moon are lined up. What kind of tide results?','A spring tide, with very high highs and very low lows','When the Sun, Earth, and Moon line up, their pulls add together. That makes a spring tide.',
+  [['A neap tide, with a small difference between high and low','Neap tides happen when the Sun and Moon pull at right angles.'],['No tide, because the Moon cannot be seen','The Moon\u2019s gravity still pulls on the oceans even when it cannot be seen.'],['A tide that only happens in the spring season','Spring tides happen in every season. The name has nothing to do with the season.']]],
+ ['During a full moon, the Sun and Moon are on opposite sides of Earth in a line. What kind of tide results?','A spring tide, with very high highs and very low lows','Even with Earth in the middle, the pulls line up and work together, so tides are at their strongest.',
+  [['A neap tide, because the Sun and Moon are far apart','A straight line makes the pulls work together, not against each other.'],['No tide, because the pulls cancel out','Pulls along the same line make the bulges bigger, not smaller.'],['A tide only on the side facing the Moon','Both sides of Earth get tidal bulges.']]],
+ ['At first quarter moon, the Moon and Sun are at right angles as seen from Earth. What kind of tide results?','A neap tide, with a small difference between high and low','At right angles, the Sun\u2019s pull partly offsets the Moon\u2019s pull, so tides are weaker.',
+  [['A spring tide, with the highest tides of the month','Spring tides happen when the Sun, Earth, and Moon line up.'],['No tide at all','Tides still happen. They are just smaller.'],['A spring tide, because the Moon is half lit','How much of the Moon is lit does not matter. Its position does.']]],
+ ['Which moon phases bring neap tides?','First quarter and third quarter','At the quarter moons, the Sun and Moon are at right angles and the tides are weakest.',
+  [['New moon and full moon','Those phases bring spring tides.'],['Only the full moon','The full moon brings spring tides.'],['Only the new moon','The new moon brings spring tides.']]],
+ ['Which moon phases bring spring tides?','New moon and full moon','At new moon and full moon, the Sun, Earth, and Moon are lined up.',
+  [['First quarter and third quarter','Those phases bring neap tides.'],['Only the first quarter moon','That phase brings neap tides.'],['Only the third quarter moon','That phase brings neap tides.']]],
+ ['How is a spring tide different from a neap tide?','A spring tide has a bigger difference between high and low water','Spring tides have the highest highs and lowest lows. Neap tides have the smallest difference.',
+  [['A spring tide only happens in the spring','Spring tides happen in every season.'],['A neap tide is caused by wind instead of gravity','Both kinds of tides are caused by gravity.'],['A spring tide happens on only one side of Earth','Tidal bulges form on both sides of Earth.']]],
+ ['Why do spring tides get so high?','The Sun\u2019s and Moon\u2019s gravitational pulls add together','When the Sun, Earth, and Moon line up, both pulls stretch the ocean along the same line.',
+  [['The Sun\u2019s and Moon\u2019s pulls cancel each other','That is closer to what happens at neap tides, when the pulls partly offset each other.'],['Earth stops rotating for a short time','Earth keeps rotating at the same rate.'],['The Moon suddenly moves much closer to Earth','The Moon\u2019s distance changes only a little.']]],
+ ['The Sun and Moon pull at right angles during a neap tide. What does that do?','Their pulls partly offset each other, so tides are smaller','The Sun pulls the water a different way than the Moon does, so the bulges are weaker.',
+  [['Their pulls add together, so tides are larger','That happens when they line up, at spring tide.'],['Gravity from both turns off','Gravity never turns off.'],['The tides stop completely','Tides still happen. They are just smaller.']]]
+]);
+function clockTxt(h){var m=((h%24)+24)%24,ap=m<12?'AM':'PM',hh=m%12===0?12:m%12;return 'About '+hh+':00 '+ap;}
+function gTideTime(){
+  var h0=rnd(1,11)+(Math.random()<0.5?12:0),kind=rnd(0,1),wr=[],right,prompt,why;
+  var start=clockTxt(h0).replace('About ','');
+  function W(h,w){wr.push({val:((h%24)+24)%24,html:clockTxt(h),why:w});}
+  if(kind===0){
+    right=(h0+6)%24;
+    prompt='On a coast with two high tides and two low tides each day, high tide is at <b>'+start+'</b>. About when is the next <b>low</b> tide?';
+    W(h0+12,'That is about when the next high tide comes, 12 hours later.');W(h0+3,'High tide to low tide takes about 6 hours, not 3.');W(h0+9,'That is too long. Low tide comes about 6 hours after high tide.');W(h0+1,'That is too soon. Low tide comes about 6 hours after high tide.');
+    why='It takes about 6 hours to go from high tide to low tide. '+start+' + 6 hours = <b>'+clockTxt(h0+6).replace('About ','about ')+'</b>.';
+  }else{
+    right=(h0+12)%24;
+    prompt='On a coast with two high tides and two low tides each day, high tide is at <b>'+start+'</b>. About when is the next <b>high</b> tide?';
+    W(h0+6,'That is about when low tide comes, 6 hours later.');W(h0+9,'That is too soon. The next high tide is about 12 hours later.');W(h0+18,'That is too late. The next high tide is about 12 hours later.');W(h0+3,'That is far too soon for the next high tide.');
+    why='High tides come about 12 hours apart. '+start+' + 12 hours = <b>'+clockTxt(h0+12).replace('About ','about ')+'</b>.';
+  }
+  return {topic:'time',prompt:prompt,correct:{val:right,html:clockTxt(right)},wrongs:wr,check:function(v){return v===right;},explain:why};
+}
+
+/* ---------- SET 19: Heat Transfer (7.8A) ---------- */
+var HEATW={'Conduction':'Conduction is heat moving through direct contact between touching objects.','Convection':'Convection is heat carried by a moving liquid or gas that rises and sinks.','Radiation':'Radiation is energy that travels as waves, even through empty space.','Insulation':'Insulation slows down heat transfer. It is not a way that heat moves.'};
+var gHeatMethod=labelGen('type',[
+ ['A metal spoon left in a pot of hot soup gets hot up the handle.','Conduction','Heat moves through the metal from particle to particle, so it is conduction.'],
+ ['You feel warm standing in the Sun on a cold day.','Radiation','The Sun\u2019s energy travels through space as waves and warms your skin.'],
+ ['Warm air rises from a heater, cools, sinks, and circles around the room.','Convection','Moving air carries thermal energy in a loop, so it is convection.'],
+ ['Hot water at the bottom of a pot rises while cooler water sinks.','Convection','The moving water carries heat in a loop, so it is convection.'],
+ ['Your hands get warm when you wrap them around a cup of hot chocolate.','Conduction','Heat flows directly from the hot cup into your hands where they touch.'],
+ ['A heat lamp keeps french fries warm without touching them.','Radiation','The lamp sends out energy as waves that warm the food.'],
+ ['A sidewalk burns your bare feet on a hot afternoon.','Conduction','Heat flows from the hot concrete into your feet by direct contact.'],
+ ['A hot air balloon rises when the air inside is heated.','Convection','Warm air rises and carries thermal energy with it.'],
+ ['You feel heat on your hands when you hold them out to the side of a campfire.','Radiation','The energy travels through the air as waves. You are not touching the fire, and the hot air rises instead of moving sideways.'],
+ ['A metal pan on a hot electric stove coil gets hot.','Conduction','The coil touches the pan, so heat flows by direct contact.'],
+ ['On a sunny day, air near the ground heats up and rises while cooler air flows in to replace it.','Convection','Rising and sinking air carries heat, so it is convection.']
+],['Conduction','Convection','Radiation','Insulation'],function(l){return 'That isn\u2019t the best match. '+HEATW[l];},'Which kind of heat transfer is this?<br>');
+var gHeatIdea=bankGen('idea',[
+ ['Why does a metal chair feel colder than a wooden chair when both are at room temperature?','Metal conducts heat away from your body faster than wood does','Metals are good conductors, so heat leaves your hand quickly. Wood is a poor conductor, so it feels warmer.',
+  [['Metal is actually colder than wood','Both are at the same room temperature. Metal just feels colder.'],['Wood makes its own heat','Wood does not make heat. It is just a poorer conductor than metal.'],['Metal absorbs cold from the air','Cold is not a substance. Heat flows out of your hand into the metal.']]],
+ ['Which material is the best thermal insulator?','Foam','Foam traps tiny pockets of air, which slows heat transfer.',
+  [['Copper','Copper is a good conductor, not an insulator.'],['Aluminum foil','Aluminum is a good conductor of heat.'],['Steel','Steel conducts heat well.']]],
+ ['Convection can happen in which kinds of matter?','Liquids and gases','Convection needs a fluid that can flow and carry heat as it rises and sinks.',
+  [['Solids only','Particles in a solid stay in place, so they cannot flow and carry heat.'],['Only in empty space','Convection needs particles that can flow. Empty space has none.'],['Only in metals','Metals mostly transfer heat by conduction.']]],
+ ['Which type of heat transfer can move energy through empty space?','Radiation','Radiation travels as waves, so it does not need any matter. That is how the Sun\u2019s energy reaches Earth.',
+  [['Conduction','Conduction needs touching particles.'],['Convection','Convection needs a moving liquid or gas.'],['Insulation','Insulation slows down heat transfer. It is not a way heat moves.']]],
+ ['A thermos keeps hot drinks hot. Which feature helps most?','A vacuum gap between the walls, which blocks conduction and convection','With almost no air between the walls, there are few particles to carry heat across.',
+  [['Thin metal walls with no gap','Thin metal conducts heat away quickly.'],['A black outer coating that absorbs heat','Absorbing heat would not keep the drink hot.'],['A lid made of metal','Metal conducts heat, so it would lose heat faster.']]],
+ ['Why do people wear light-colored clothes on hot sunny days?','Light colors reflect more of the Sun\u2019s radiation than dark colors','Dark colors absorb more energy from sunlight. Light colors reflect more of it.',
+  [['Light colors give off cold','Colors do not make cold. Light colors just absorb less energy.'],['Dark colors reflect more sunlight','Dark colors absorb more sunlight.'],['Light colors stop conduction','Color affects radiation, not conduction.']]],
+ ['A student holds an ice cube. Which way does heat flow?','From her warm hand into the cold ice','Heat always flows from warmer objects to cooler objects.',
+  [['From the ice into her hand','Heat flows from warmer to cooler, so it leaves her hand.'],['Heat does not move at all','Heat flows whenever there is a temperature difference.'],['Cold flows from the ice to her hand','Cold is not something that flows. Heat flows from hot to cold.']]]
+]);
+
+/* ---------- SET 20: Temperature and Particles (7.8C) ---------- */
+var gTempLink=bankGen('link',[
+ ['What does temperature measure?','The average kinetic energy of the particles in a substance','Particles are always moving. Temperature tells you how much kinetic energy they have on average.',
+  [['The total amount of thermal energy in a substance','Total thermal energy also depends on how much matter there is. Temperature is an average.'],['The number of particles in a substance','Temperature does not tell you how many particles there are.'],['The size of the particles in a substance','Temperature is about particle motion, not particle size.']]],
+ ['A cup of water is heated from 20\u00b0C to 60\u00b0C. What happens to its water particles?','They move faster on average','Heating adds energy, so the particles\u2019 average kinetic energy increases.',
+  [['They move slower on average','Heating makes particles move faster, not slower.'],['They get larger','The particles do not change size. They just move faster.'],['They stop moving','Particles are always moving. Heating makes them move faster.']]],
+ ['A cup of water and a bathtub of water are both at 40\u00b0C. How does the average kinetic energy of their particles compare?','It is the same','The bathtub has more total thermal energy, but the average kinetic energy per particle depends only on temperature.',
+  [['The bathtub\u2019s is greater because it has more water','More water means more total thermal energy, not a higher average kinetic energy.'],['The cup\u2019s is greater because it is smaller','Size does not change the average kinetic energy.'],['It cannot be compared','You can compare it. The same temperature means the same average kinetic energy.']]],
+ ['Which change would make the particles in an iron nail move slower?','Cooling the nail','Taking away thermal energy lowers the temperature, so the particles move more slowly.',
+  [['Heating the nail','Heating makes particles move faster.'],['Making the nail longer','Length does not change the average kinetic energy of the particles.'],['Painting the nail','Painting does not change how fast the particles move.']]],
+ ['What happens to the particles in a gas when it is cooled?','They move more slowly on average','Cooling lowers the average kinetic energy of the particles.',
+  [['They move faster on average','Cooling takes energy away, so particles slow down.'],['They turn into a different substance','Cooling a gas does not change what it is made of.'],['They get much bigger','The particles do not change size.']]],
+ ['Do the particles in an ice cube move?','Yes, they vibrate in place','Particles in a solid cannot move around freely, but they always vibrate.',
+  [['No, particles in a solid are completely still','Particles in solids still vibrate.'],['Yes, they move around freely like a gas','Solid particles stay in fixed positions and vibrate.'],['Only when the ice starts to melt','Particles vibrate all the time, even in frozen ice.']]],
+ ['Two samples of the same liquid are compared. Sample X has particles with greater average kinetic energy. Which statement is true?','Sample X has the higher temperature','Greater average kinetic energy means a higher temperature.',
+  [['Sample X has the lower temperature','Greater average kinetic energy goes with a higher temperature.'],['Both samples have the same temperature','Different average kinetic energy means different temperatures.'],['Sample X must be a different substance','The liquids are the same. Only the temperature differs.']]],
+ ['Why is a hot cup of tea hot?','Its particles have a high average kinetic energy','The faster the particles move, the higher the temperature.',
+  [['Its particles are larger','Hot does not mean bigger particles.'],['Its particles are not moving','Particles are always moving.'],['It contains a substance called heat','Heat is energy moving between objects. Temperature comes from particle motion.']]]
+]);
+function gTempCompare(){
+  var T=[-10,0,5,10,20,30,40,60,80,100],i=rnd(0,T.length-1),j=rnd(0,T.length-1);while(j===i)j=rnd(0,T.length-1);
+  var a=T[i],b=T[j],hot=a>b?'Sample A':'Sample B',cold=a>b?'Sample B':'Sample A',great=Math.random()<0.5;
+  var right=great?hot:cold,other=great?cold:hot;
+  var wr=[{val:other,html:other,why:other+' is '+(great?'colder':'hotter')+', so its particles have '+(great?'less':'more')+' average kinetic energy.'},
+    {val:'Both are the same',html:'Both are the same',why:'The temperatures are different, so the average kinetic energy is different.'},
+    {val:'Can\u2019t tell',html:'Can\u2019t tell',why:'You can tell. A higher temperature means greater average kinetic energy.'}];
+  return {topic:'compare',prompt:'Sample A is <b>'+num(a)+'\u00b0C</b> and Sample B is <b>'+num(b)+'\u00b0C</b>. Both are the same substance. Which sample\u2019s particles have the <b>'+(great?'greater':'smaller')+'</b> average kinetic energy?',
+    correct:{val:right,html:right},wrongs:wr,check:function(v){return v===right;},
+    explain:'Temperature measures average kinetic energy. '+hot+' has the higher temperature, so its particles move faster on average. The answer is <b>'+right+'</b>.'};
+}
+
+/* ---------- SET 21: Transverse Waves (8.8A) ---------- */
+function wavePath(x0,cy,amp,wl,x1){var p=[],x;for(x=x0;x<=x1;x+=4)p.push(f1(x)+','+f1(cy-amp*Math.sin(2*Math.PI*(x-x0)/wl)));return p.join(' ');}
+var WPW={'Amplitude':'Amplitude is the height from the resting line up to a crest (or down to a trough).','Wavelength':'Wavelength is the distance from one crest to the next crest.','Crest':'A crest is the highest point of a wave.','Trough':'A trough is the lowest point of a wave.'};
+function gWaveParts(){
+  var wl=pick([100,160]),amp=pick([45,65,85]),x0=30,cy=190,feat=pick(['Amplitude','Wavelength','Crest','Trough']),xc=x0+wl/4,xt=x0+3*wl/4,O='#ff8a3d',s=svgOpen();
+  s+='<line x1="30" y1="190" x2="355" y2="190" stroke="#46557f" stroke-width="2" stroke-dasharray="6 6"/>';
+  s+='<polyline points="'+wavePath(x0,cy,amp,wl,350)+'" fill="none" stroke="#38d6ff" stroke-width="5" stroke-linejoin="round"/>';
+  if(feat==='Amplitude'){
+    s+='<line x1="'+xc+'" y1="'+(cy-amp+8)+'" x2="'+xc+'" y2="'+(cy-8)+'" stroke="'+O+'" stroke-width="4"/>'+tipV(xc,cy-amp,-1,O)+tipV(xc,cy,1,O);
+  }else if(feat==='Wavelength'){
+    var ya=cy-amp-22;
+    s+='<line x1="'+(xc+8)+'" y1="'+ya+'" x2="'+(xc+wl-8)+'" y2="'+ya+'" stroke="'+O+'" stroke-width="4"/>'+tipH(xc,ya,-1,O)+tipH(xc+wl,ya,1,O);
+    s+='<line x1="'+xc+'" y1="'+(ya+4)+'" x2="'+xc+'" y2="'+(cy-amp-6)+'" stroke="'+O+'" stroke-width="2" stroke-dasharray="4 4"/><line x1="'+(xc+wl)+'" y1="'+(ya+4)+'" x2="'+(xc+wl)+'" y2="'+(cy-amp-6)+'" stroke="'+O+'" stroke-width="2" stroke-dasharray="4 4"/>';
+  }else if(feat==='Crest'){
+    s+='<circle cx="'+xc+'" cy="'+(cy-amp)+'" r="10" fill="'+O+'"/>';
+  }else{
+    s+='<circle cx="'+xt+'" cy="'+(cy+amp)+'" r="10" fill="'+O+'"/>';
+  }
+  s+='</svg>';
+  var wr=['Amplitude','Wavelength','Crest','Trough'].filter(function(l){return l!==feat;}).map(function(l){return {val:l,html:l,why:'Not this one. '+WPW[l]};});
+  return {topic:'parts',prompt:'The orange mark on this transverse wave shows one part of the wave. What is it?',visual:s,
+    correct:{val:feat,html:feat},wrongs:wr,check:function(v){return v===feat;},explain:'The orange mark shows the <b>'+feat.toLowerCase()+'</b>. '+WPW[feat]};
+}
+function gWaveCompare(){
+  var prop=pick(['amplitude','wavelength','frequency']),big=Math.random()<0.5,amps=shuffle([22,36,50]).slice(0,2),wls=shuffle([70,105,160]).slice(0,2);
+  var A={amp:amps[0],wl:wls[0]},B={amp:amps[1],wl:wls[1]},s=svgOpen(),x0=40,cyA=95,cyB=275;
+  [[A,cyA,'#ffcf5a','A'],[B,cyB,'#38d6ff','B']].forEach(function(w){
+    s+='<line x1="40" y1="'+w[1]+'" x2="360" y2="'+w[1]+'" stroke="#46557f" stroke-width="2" stroke-dasharray="6 6"/>';
+    s+='<polyline points="'+wavePath(x0,w[1],w[0].amp,w[0].wl,360)+'" fill="none" stroke="'+w[2]+'" stroke-width="5" stroke-linejoin="round"/>';
+    s+='<text x="14" y="'+(w[1]+7)+'" fill="'+w[2]+'" font-size="22">'+w[3]+'</text>';
+  });
+  s+='</svg>';
+  var rightA,prompt,word,wrongText,expl;
+  if(prop==='amplitude'){
+    rightA=big?A.amp>B.amp:A.amp<B.amp;
+    prompt='Which wave has the <b>'+(big?'greater':'smaller')+'</b> amplitude?';
+    wrongText=function(n){return n+' has the '+(big?'smaller':'greater')+' amplitude. Compare how far each crest is above its resting line.';};
+    expl='Amplitude is the height above the resting line. The '+(big?'taller':'shorter')+' wave has the '+(big?'greater':'smaller')+' amplitude.';
+  }else if(prop==='wavelength'){
+    rightA=big?A.wl>B.wl:A.wl<B.wl;
+    prompt='Which wave has the <b>'+(big?'longer':'shorter')+'</b> wavelength?';
+    wrongText=function(n){return n+' has the '+(big?'shorter':'longer')+' wavelength. Compare the distance from crest to crest.';};
+    expl='Wavelength is the distance from one crest to the next. The wave with crests '+(big?'farther apart':'closer together')+' has the '+(big?'longer':'shorter')+' wavelength.';
+  }else{
+    rightA=big?A.wl<B.wl:A.wl>B.wl;
+    prompt='Both waves travel at the same speed along the same rope. Which wave has the <b>'+(big?'higher':'lower')+'</b> frequency?';
+    wrongText=function(n){return n+' has the '+(big?'longer':'shorter')+' wavelength, so it has the '+(big?'lower':'higher')+' frequency.';};
+    expl='At the same speed, a shorter wavelength means a higher frequency. The wave with crests '+(big?'closer together':'farther apart')+' has the '+(big?'higher':'lower')+' frequency.';
+  }
+  var right=rightA?'Wave A':'Wave B',other=rightA?'Wave B':'Wave A';
+  var wr=[{val:other,html:other,why:wrongText(other)},
+    {val:'Both equal',html:'Both equal',why:'The two waves are different, so they are not equal.'},
+    {val:'Can\u2019t tell',html:'Can\u2019t tell',why:prop==='frequency'?'You can tell. At the same speed, a shorter wavelength means a higher frequency.':'You can tell by comparing the two waves in the picture.'}];
+  return {topic:'compare',prompt:prompt,visual:s,correct:{val:right,html:right},wrongs:wr,check:function(v){return v===right;},explain:expl+' The answer is <b>'+right+'</b>.'};
+}
+function gWaveFreq(){
+  var T=pick([1,2]),n=T===1?rnd(2,5):pick([2,4,6]),f=n/T,amp=48,s=svgOpen(),L=64,R=360,cy=170,pw=R-L,i,x;
+  for(i=0;i<=T;i++){x=L+i/T*pw;
+    s+='<line x1="'+f1(x)+'" y1="40" x2="'+f1(x)+'" y2="300" stroke="#2b3d7a" stroke-width="1"/>';
+    s+='<text x="'+f1(x)+'" y="324" fill="#eef3ff" text-anchor="middle">'+i+'</text>';}
+  s+='<line x1="64" y1="'+cy+'" x2="360" y2="'+cy+'" stroke="#46557f" stroke-width="2" stroke-dasharray="6 6"/>';
+  s+='<line x1="64" y1="40" x2="64" y2="300" stroke="#9db0d6" stroke-width="3"/><line x1="64" y1="300" x2="360" y2="300" stroke="#9db0d6" stroke-width="3"/>';
+  var p=[];for(x=0;x<=pw;x+=3)p.push(f1(L+x)+','+f1(cy-amp*Math.sin(2*Math.PI*n*(x/pw)))); 
+  s+='<polyline points="'+p.join(' ')+'" fill="none" stroke="#ffcf5a" stroke-width="5" stroke-linejoin="round"/>';
+  s+='<text x="212" y="352" fill="#9db0d6" text-anchor="middle">Time (s)</text>';
+  s+='<text transform="translate(18,170) rotate(-90)" fill="#9db0d6" text-anchor="middle">Displacement</text></svg>';
+  var wr=[];function W(v,html,why){wr.push({val:v,html:html,why:why});}
+  W(f+1,num(f+1)+' Hz','Close. Divide the number of waves by the time in seconds.');
+  W(f*2,num(f*2)+' Hz','Frequency is the number of waves per second. Divide the waves by the time.');
+  W(f+2,num(f+2)+' Hz','Close. Count the waves, then divide by the time in seconds.');
+  if(f>1)W(f-1,num(f-1)+' Hz','Close. Count the waves, then divide by the time in seconds.');
+  if(T>1)W(n,n+' Hz','You counted the waves but forgot to divide by the time.');
+  W(T/n,fmt(T/n)+' s','That is the period, the time for one wave. Frequency is waves per second.');
+  return {topic:'freq',prompt:'The graph shows a point on a rope as waves pass over '+T+' second'+(T>1?'s':'')+'. What is the frequency of the wave?',visual:s,
+    correct:{val:f,html:num(f)+' Hz'},wrongs:wr,check:function(v){return Math.abs(v-f)<1e-9;},
+    explain:'Count the waves: <b>'+n+'</b> waves in <b>'+T+' s</b>. Frequency = '+n+' \u00f7 '+T+' = <b>'+num(f)+' Hz</b>.'};
+}
+var EMW=['Radio waves','Microwaves','Infrared','Visible light','Ultraviolet','X-rays','Gamma rays'];
+function gEMOrder(){
+  var idx=shuffle([0,1,2,3,4,5,6]).slice(0,4),high=Math.random()<0.5,kind=rnd(0,2);
+  var best=high?Math.max.apply(null,idx):Math.min.apply(null,idx),right=EMW[best];
+  var prop=high?['highest frequency','shortest wavelength','most energy'][kind]:['lowest frequency','longest wavelength','least energy'][kind];
+  var wr=idx.filter(function(k){return k!==best;}).map(function(k){
+    return {val:EMW[k],html:EMW[k],why:EMW[k]+' has a '+(high?'lower frequency and a longer wavelength':'higher frequency and a shorter wavelength')+' than '+right+'.'};});
+  return {topic:'spectrum',prompt:'Which of these electromagnetic waves has the <b>'+prop+'</b>?',
+    correct:{val:right,html:right},wrongs:wr,check:function(v){return v===right;},
+    explain:'From lowest to highest frequency: Radio \u2192 Microwaves \u2192 Infrared \u2192 Visible light \u2192 Ultraviolet \u2192 X-rays \u2192 Gamma rays. Higher frequency means a shorter wavelength and more energy. The answer is <b>'+right+'</b>.'};
+}
+var gWaveIdea=bankGen('idea',[
+ ['In a transverse wave, how do the particles of the medium move compared with the direction the wave travels?','At right angles (perpendicular) to the direction of the wave','On a shaken rope, the rope moves up and down while the wave travels along it.',
+  [['Back and forth in the same direction as the wave','That describes a longitudinal wave, like sound.'],['In the same direction, traveling with the wave','The medium does not travel along with the wave. Only the energy does.'],['They do not move at all','The particles move up and down (or side to side) as the wave passes.']]],
+ ['What does the amplitude of a wave tell you?','How much energy the wave carries','A bigger amplitude means the wave carries more energy.',
+  [['How fast the wave travels','Wave speed depends on the medium, not the amplitude.'],['How many waves pass a point each second','That is frequency.'],['The distance between two crests','That is wavelength.']]],
+ ['Which unit is used to measure frequency?','Hertz (Hz)','One hertz means one wave passes a point each second.',
+  [['Meters (m)','Meters measure distance, such as wavelength.'],['Joules (J)','Joules measure energy.'],['Meters per second (m/s)','That unit measures speed.']]],
+ ['Two waves travel at the same speed. Wave 1 has a shorter wavelength than Wave 2. Which statement is true?','Wave 1 has the higher frequency','At the same speed, a shorter wavelength means a higher frequency.',
+  [['Wave 1 has the lower frequency','At the same speed, a shorter wavelength means a higher frequency.'],['Wave 1 has the greater amplitude','Wavelength does not tell you the amplitude.'],['Both waves have the same frequency','Different wavelengths at the same speed give different frequencies.']]],
+ ['A boat bobs up and down as ocean waves pass. What does this show about waves?','Waves carry energy, but the water itself does not travel with them','The water mostly moves up and down in place while the energy moves along.',
+  [['Waves carry the water all the way to the shore','The water moves up and down in place. Only the energy travels.'],['Waves push matter along at the same speed as the wave','The medium stays about where it is. The energy moves.'],['Waves stop when they reach a boat','The wave keeps traveling.']]],
+ ['Which is an example of a transverse wave?','A wave on a rope shaken up and down','The rope moves up and down, at right angles to the direction the wave travels.',
+  [['A sound wave traveling through air','Sound is a longitudinal wave.'],['A wave made by pushing a spring in and out','Pushing in and out makes a longitudinal wave.'],['A pressure wave from a drum','Sound pressure waves are longitudinal.']]],
+ ['Radio waves and gamma rays both travel at the same speed in a vacuum. What else is true?','Radio waves have a longer wavelength and lower frequency than gamma rays','At the same speed, a longer wavelength goes with a lower frequency.',
+  [['Radio waves have a higher frequency than gamma rays','Radio waves have a lower frequency. Gamma rays have the highest.'],['Radio waves and gamma rays have the same wavelength','They have very different wavelengths.'],['Radio waves travel faster than gamma rays','All electromagnetic waves travel at the same speed in a vacuum.']]],
+ ['Does a taller wave (greater amplitude) travel faster in the same medium?','No, the speed depends on the medium','Amplitude is about energy, not speed. The medium sets how fast a wave moves.',
+  [['Yes, taller waves always travel faster','Amplitude affects energy, not speed.'],['Yes, because taller waves have a higher frequency','Amplitude and frequency are independent.'],['No, because taller waves are always slower','Amplitude does not slow a wave down. The medium sets the speed.']]]
+]);
+
+/* ---------- SET 22: Stars and the H-R Diagram (8.9A) ---------- */
+function hrBase(){
+  var s=svgOpen();
+  s+='<line x1="50" y1="20" x2="50" y2="320" stroke="#9db0d6" stroke-width="3"/><line x1="50" y1="320" x2="362" y2="320" stroke="#9db0d6" stroke-width="3"/>';
+  s+='<text x="56" y="16" fill="#9db0d6" font-size="14">Bright</text><text x="56" y="314" fill="#9db0d6" font-size="14">Dim</text>';
+  s+='<text transform="translate(18,170) rotate(-90)" fill="#9db0d6" text-anchor="middle">Luminosity</text>';
+  s+='<text x="206" y="356" fill="#9db0d6" text-anchor="middle">Hot  \u2190  Temperature  \u2192  Cool</text>';
+  return s;
+}
+var HRR=[
+ {name:'main-sequence stars',where:'main-sequence stars, including the Sun',exp:'Most stars, including the Sun, fall on the diagonal main sequence.',shape:'<line x1="95" y1="60" x2="320" y2="265" stroke="#4a63ad" stroke-opacity=".7" stroke-width="34" stroke-linecap="round"/>',lx:207,ly:168},
+ {name:'red giants',where:'red giants',exp:'Red giants are cool (right side) but very bright (high up) because they are huge.',shape:'<ellipse cx="300" cy="118" rx="38" ry="24" fill="#4a63ad" fill-opacity=".7"/>',lx:300,ly:125},
+ {name:'supergiants',where:'supergiants',exp:'Supergiants are the brightest, largest stars, at the very top.',shape:'<ellipse cx="240" cy="48" rx="80" ry="16" fill="#4a63ad" fill-opacity=".7"/>',lx:240,ly:55},
+ {name:'white dwarfs',where:'white dwarfs',exp:'White dwarfs are hot (left side) but dim (low down) because they are tiny.',shape:'<ellipse cx="105" cy="265" rx="36" ry="20" fill="#4a63ad" fill-opacity=".7"/>',lx:105,ly:272}
+];
+function gHRRegion(){
+  var L=shuffle(['A','B','C','D']),k=rnd(0,3),s=hrBase();
+  HRR.forEach(function(r,i){s+=r.shape+'<text x="'+r.lx+'" y="'+r.ly+'" fill="#ffffff" font-size="22" text-anchor="middle">'+L[i]+'</text>';});
+  s+='</svg>';
+  var right='Region '+L[k],wr=[];
+  HRR.forEach(function(r,i){if(i!==k)wr.push({val:'Region '+L[i],html:'Region '+L[i],why:'Region '+L[i]+' is where '+r.where+' are found.'});});
+  return {topic:'region',prompt:'Which region of this H-R diagram contains <b>'+HRR[k].name+'</b>?',visual:s,
+    correct:{val:right,html:right},wrongs:wr,check:function(v){return v===right;},
+    explain:'On an H-R diagram, hotter stars are on the left and brighter stars are at the top. '+HRR[k].exp+' The answer is <b>'+right+'</b>.'};
+}
+function gHRCompare(){
+  var ask=pick(['hotter','cooler','brighter','dimmer']),x1,x2,y1,y2;
+  do{x1=rnd(80,320);x2=rnd(80,320);}while(Math.abs(x1-x2)<60);
+  do{y1=rnd(45,285);y2=rnd(45,285);}while(Math.abs(y1-y2)<60);
+  var s=hrBase();
+  s+='<line x1="95" y1="60" x2="320" y2="265" stroke="#4a63ad" stroke-opacity=".3" stroke-width="30" stroke-linecap="round"/>';
+  s+='<circle cx="'+x1+'" cy="'+y1+'" r="9" fill="#ffcf5a"/><text x="'+(x1+13)+'" y="'+(y1-9)+'" fill="#ffcf5a" font-size="20">X</text>';
+  s+='<circle cx="'+x2+'" cy="'+y2+'" r="9" fill="#4be39a"/><text x="'+(x2+13)+'" y="'+(y2-9)+'" fill="#4be39a" font-size="20">Y</text></svg>';
+  var xRight=(ask==='hotter')?x1<x2:(ask==='cooler')?x1>x2:(ask==='brighter')?y1<y2:y1>y2;
+  var right=xRight?'Star X':'Star Y',other=xRight?'Star Y':'Star X';
+  var expl=(ask==='hotter'||ask==='cooler')?'On an H-R diagram, temperature gets <b>cooler to the right</b>, so stars farther left are hotter.':'On an H-R diagram, stars higher up are <b>brighter</b> (more luminous).';
+  var wr=[{val:other,html:other,why:other+' is '+(ask==='hotter'?'cooler':ask==='cooler'?'hotter':ask==='brighter'?'dimmer':'brighter')+' than '+right+' on this diagram.'},
+    {val:'Both equal',html:'Both equal',why:'The stars are in different places, so they are not equal.'},
+    {val:'Can\u2019t tell',html:'Can\u2019t tell',why:'You can tell from where the stars are on the diagram.'}];
+  return {topic:'compare',prompt:'Which star is '+(ask==='hotter'?'<b>hotter</b>':ask==='cooler'?'<b>cooler</b>':ask==='brighter'?'<b>brighter</b> (more luminous)':'<b>dimmer</b> (less luminous)')+'?',visual:s,
+    correct:{val:right,html:right},wrongs:wr,check:function(v){return v===right;},explain:expl+' The answer is <b>'+right+'</b>.'};
+}
+var gStarLife=bankGen('life',[
+ ['Where do stars form?','In nebulae, which are huge clouds of gas and dust','Gravity pulls gas and dust in a nebula together until a protostar forms.',
+  [['Inside black holes','Black holes are an end stage for a few very massive stars. Stars do not form inside them.'],['From colliding comets','Stars form from gas and dust, not from comets.'],['Inside white dwarfs','White dwarfs are what some stars become at the end of their lives.']]],
+ ['What powers a main-sequence star like the Sun?','Nuclear fusion of hydrogen into helium in its core','In the core, hydrogen nuclei fuse into helium and release huge amounts of energy.',
+  [['Burning coal and gas like a campfire','Stars are not burning like a fire. They run on nuclear fusion.'],['Splitting uranium atoms','Stars fuse small nuclei together. They do not split uranium.'],['Friction from orbiting planets','Planets do not power a star.']]],
+ ['What will most likely happen to the Sun at the end of its life?','It will swell into a red giant and then shrink into a white dwarf','The Sun is a medium-mass star, so it will end as a white dwarf.',
+  [['It will explode as a supernova','Only stars much more massive than the Sun end in a supernova.'],['It will collapse into a black hole','The Sun does not have enough mass to become a black hole.'],['It will become a neutron star','The Sun does not have enough mass to become a neutron star.']]],
+ ['Which kind of star ends its life in a supernova?','A very massive star','Very massive stars end in a huge explosion called a supernova.',
+  [['A star with about the Sun\u2019s mass','Stars like the Sun become red giants and then white dwarfs.'],['A small, cool red dwarf','Small stars burn slowly and last a very long time.'],['A protostar','A protostar is a young star that has not yet started fusion.']]],
+ ['Which stars have the shortest lives?','Very massive, hot stars','Massive stars burn through their fuel quickly. Small stars use fuel slowly and last longest.',
+  [['Small, cool stars','Small stars use their fuel slowly and live the longest.'],['Stars like the Sun','The Sun will live for about 10 billion years.'],['All stars live the same amount of time','Massive stars live much shorter lives than small stars.']]],
+ ['Which list shows the life stages of a Sun-like star in order?','Nebula \u2192 protostar \u2192 main sequence \u2192 red giant \u2192 white dwarf','A Sun-like star forms in a nebula, spends most of its life on the main sequence, swells into a red giant, and ends as a white dwarf.',
+  [['Nebula \u2192 main sequence \u2192 protostar \u2192 white dwarf \u2192 red giant','A protostar forms before the main sequence, and a red giant comes before a white dwarf.'],['Protostar \u2192 nebula \u2192 red giant \u2192 main sequence \u2192 white dwarf','A star starts in a nebula, and the red giant stage comes after the main sequence.'],['Nebula \u2192 protostar \u2192 red giant \u2192 main sequence \u2192 black hole','A Sun-like star does not become a black hole, and the main sequence comes before the red giant stage.']]],
+ ['What is a protostar?','A forming star that has not yet started hydrogen fusion','A protostar is the young stage that comes before the main sequence.',
+  [['A star that has run out of fuel','That describes a star near the end of its life.'],['A cloud of gas and dust','That is a nebula. A protostar forms inside one.'],['The leftover core of a dead star','That is a white dwarf or a neutron star.']]],
+ ['The Sun is classified as which kind of star?','A main-sequence star','The Sun fuses hydrogen into helium in its core, so it is a main-sequence star.',
+  [['A red giant','The Sun will become a red giant much later.'],['A white dwarf','The Sun will become a white dwarf at the end of its life.'],['A supergiant','Supergiants are far larger and brighter than the Sun.']]]
+]);
+
+/* ---------- SET 23: Types of Galaxies (8.9B) ---------- */
+function galaxySVG(kind){
+  var s=svgOpen(),i,a,rot=Math.random()*Math.PI*2,cols,x,y;
+  function clampv(v){return Math.max(8,Math.min(372,v));}
+  function dot(x,y,r,c,o){return '<circle cx="'+f1(clampv(x))+'" cy="'+f1(clampv(y))+'" r="'+f1(r)+'" fill="'+c+'" fill-opacity="'+o+'"/>';}
+  for(i=0;i<45;i++)s+=dot(Math.random()*380,Math.random()*380,1,'#6f82b3',0.7);
+  if(kind==='Spiral'){
+    s+=dot(190,190,34,'#ffe9a8',0.25)+dot(190,190,20,'#ffe9a8',0.8);
+    cols=['#bfe0ff','#ffffff','#9ec8ff'];
+    for(a=0;a<2;a++)for(i=0;i<320;i++){
+      var t=0.5+i/320*2.3*Math.PI,rad=18+t*17,ang=t+a*Math.PI+rot,sp=4+i/320*13;
+      x=190+rad*Math.cos(ang)+gauss()*sp;y=190+rad*Math.sin(ang)+gauss()*sp;
+      s+=dot(x,y,1.6+Math.random()*1.6,pick(cols),0.85);}
+  }else if(kind==='Elliptical'){
+    var ax=pick([100,115]),ay=pick([55,75]);cols=['#ffe2b0','#ffd08a','#ffffff'];
+    s+=dot(190,190,40,'#ffe9a8',0.18);
+    for(i=0;i<850;i++){
+      var px=gauss()*ax,py=gauss()*ay;
+      x=190+px*Math.cos(rot)-py*Math.sin(rot);y=190+px*Math.sin(rot)+py*Math.cos(rot);
+      s+=dot(x,y,1.3+Math.random()*1.2,pick(cols),0.8);}
+  }else{
+    cols=['#9ec8ff','#ff9ccf','#ffffff','#c8b0ff'];
+    var k=rnd(4,6),j;
+    for(j=0;j<k;j++){
+      var cxx=90+Math.random()*200,cyy=90+Math.random()*200,sp2=14+Math.random()*22;
+      for(i=0;i<90;i++)s+=dot(cxx+gauss()*sp2*1.3,cyy+gauss()*sp2*1.3,1.4+Math.random()*1.5,pick(cols),0.85);}
+  }
+  return s+'</svg>';
+}
+var GXW={'Spiral':'A spiral galaxy has a bright center and curved arms.','Elliptical':'An elliptical galaxy is a smooth oval or round ball of stars with no arms.','Irregular':'An irregular galaxy has no clear shape.','Star cluster':'A star cluster is a small group of stars inside a galaxy, not a whole galaxy.'};
+function gGalaxyShape(){
+  var kind=pick(['Spiral','Elliptical','Irregular']);
+  var wr=['Spiral','Elliptical','Irregular','Star cluster'].filter(function(l){return l!==kind;}).map(function(l){return {val:l,html:l,why:'Not this one. '+GXW[l]};});
+  return {topic:'shape',prompt:'What type of galaxy is shown in this picture?',visual:galaxySVG(kind),
+    correct:{val:kind,html:kind},wrongs:wr,check:function(v){return v===kind;},explain:'This is a <b>'+kind.toLowerCase()+'</b> galaxy. '+GXW[kind]};
+}
+var gGalaxyClue=labelGen('clues',[
+ ['It is a flat disk with a bright center and curved arms.','Spiral','Curved arms around a bright center describe a spiral galaxy.'],
+ ['It is a smooth, glowing oval of mostly older, reddish stars with little gas and dust.','Elliptical','A smooth oval of older stars with no arms is an elliptical galaxy.'],
+ ['It has no clear shape and is often messy, with lots of gas and young stars.','Irregular','A galaxy with no regular shape is an irregular galaxy.'],
+ ['Its arms wind outward from a bright center like a pinwheel.','Spiral','Arms winding out from the center describe a spiral galaxy.'],
+ ['It looks like a smooth football or ball of stars with no arms.','Elliptical','A smooth ball or oval with no arms is an elliptical galaxy.'],
+ ['Its shape was pulled out of order by gravity from a nearby galaxy, so it has no regular form.','Irregular','A galaxy with no regular form is an irregular galaxy.'],
+ ['Our Sun and solar system are inside this type of galaxy.','Spiral','The Milky Way, our home galaxy, is a spiral galaxy.']
+],['Spiral','Elliptical','Irregular','Star cluster'],function(l){return 'Not this one. '+GXW[l];},'Which type is described?<br>');
+var gGalaxyHome=bankGen('home',[
+ ['In which galaxy is Earth\u2019s solar system located?','The Milky Way','Our Sun and solar system are part of the Milky Way galaxy.',
+  [['Andromeda','Andromeda is the nearest large spiral galaxy, but we are not in it.'],['The Whirlpool Galaxy','The Whirlpool is a spiral galaxy millions of light-years away.'],['The Large Magellanic Cloud','That is a small irregular galaxy that orbits the Milky Way.']]],
+ ['Where in the Milky Way is our solar system located?','In a spiral arm, about halfway between the center and the edge','The Sun is one of hundreds of billions of stars in the Milky Way. We are about halfway out from the center.',
+  [['At the exact center of the galaxy','We are about halfway out from the center, not at the center.'],['Outside the galaxy','The Sun is one of the stars inside the Milky Way.'],['Inside the central black hole','The black hole is at the center. We orbit far away from it.']]],
+ ['What is a galaxy?','A huge system of stars, gas, and dust held together by gravity','A galaxy can hold hundreds of billions of stars.',
+  [['A single very large star','A galaxy contains billions of stars.'],['A group of planets orbiting one star','That is a solar system.'],['A cloud of gas inside a planet','A galaxy is far larger than a planet.']]],
+ ['Which list is in order from smallest to largest?','Earth \u2192 Sun \u2192 solar system \u2192 Milky Way','Earth is smaller than the Sun, the Sun is smaller than the solar system, and the solar system is inside the much larger Milky Way.',
+  [['Sun \u2192 Earth \u2192 Milky Way \u2192 solar system','The Sun is bigger than Earth, and the Milky Way is much bigger than the solar system.'],['Milky Way \u2192 solar system \u2192 Sun \u2192 Earth','That list goes from largest to smallest.'],['Solar system \u2192 Earth \u2192 Sun \u2192 Milky Way','Earth is much smaller than the solar system, so it should come first.']]],
+ ['The Milky Way is classified as which type of galaxy?','Spiral','The Milky Way is a spiral galaxy with curved arms.',
+  [['Elliptical','The Milky Way has spiral arms. It is not a smooth oval.'],['Irregular','The Milky Way has a regular spiral shape.'],['It is not a galaxy but a nebula','The Milky Way is a galaxy with hundreds of billions of stars.']]],
+ ['About how many stars are in a large galaxy like the Milky Way?','Hundreds of billions','Large galaxies contain hundreds of billions of stars.',
+  [['A few thousand','Large galaxies have far more stars than that.'],['About eight','Eight is the number of planets in our solar system, not the number of stars in a galaxy.'],['Exactly one hundred','A galaxy has far more than one hundred stars.']]]
+]);
+
+/* ---------- SET 24: Sun, Water and Weather (8.10A) ---------- */
+var gSunEnergy=bankGen('sun',[
+ ['What is the main source of energy that drives Earth\u2019s weather?','The Sun','Energy from the Sun heats the land, water, and air unevenly, which drives weather.',
+  [['Heat from Earth\u2019s core','Earth\u2019s inner heat is tiny compared with the energy that arrives from the Sun.'],['The Moon\u2019s gravity','The Moon\u2019s gravity affects tides, not weather.'],['Ocean tides','Tides do not power weather.']]],
+ ['Why is it warmer near the equator than near the poles?','Sunlight hits the equator more directly, so energy is more concentrated','Near the poles, sunlight arrives at a low angle and spreads over a larger area.',
+  [['The equator is much closer to the Sun','Earth is about the same distance from the Sun everywhere. The angle of sunlight is what matters.'],['The poles never get any sunlight','The poles do get sunlight, but at a low angle.'],['The equator has no clouds','Clouds are common near the equator.']]],
+ ['What happens to most of the Sun\u2019s energy that reaches Earth?','Some is reflected, and the rest is absorbed by the air, land, and oceans','Clouds and surfaces reflect some sunlight. The rest warms the atmosphere, land, and water.',
+  [['All of it is reflected back into space','If all of it were reflected, Earth would be frozen.'],['All of it is absorbed by the atmosphere','Land and oceans absorb a lot of it, and some is reflected.'],['It disappears when it reaches the clouds','Energy is not destroyed. It is reflected or absorbed.']]],
+ ['How does evaporation from the ocean affect weather?','It adds water vapor to the air, which can form clouds and rain','Water vapor rises, cools, and condenses into clouds that can bring precipitation.',
+  [['It removes all moisture from the air','Evaporation adds moisture to the air.'],['It stops clouds from forming','Evaporation supplies the water vapor that clouds are made from.'],['It only happens at night','Evaporation is driven by the Sun\u2019s energy and happens mostly in the daytime.']]],
+ ['Which Earth system includes the oceans, lakes, rivers, and ice?','The hydrosphere','The hydrosphere is all of Earth\u2019s water.',
+  [['The atmosphere','The atmosphere is the layer of air around Earth.'],['The geosphere','The geosphere is the solid Earth, such as rock and soil.'],['The biosphere','The biosphere is all living things.']]],
+ ['Which Earth system holds the air that moves to make wind and weather?','The atmosphere','The atmosphere is the layer of gases around Earth.',
+  [['The hydrosphere','The hydrosphere is all of Earth\u2019s water.'],['The geosphere','The geosphere is the solid Earth.'],['The biosphere','The biosphere is all living things.']]],
+ ['Why do clouds form when warm, moist air rises?','The air cools, and its water vapor condenses into tiny droplets','Rising air cools. When it gets cool enough, water vapor changes into liquid droplets.',
+  [['The air heats up and makes more water vapor','Rising air cools. It does not heat up.'],['The Sun pulls water up into the sky as clouds','The Sun provides energy, but clouds form when vapor condenses as air cools.'],['Wind carries ocean water up into the sky','Clouds are made of condensed water vapor, not carried ocean water.']]]
+]);
+var WCW={'Evaporation':'Evaporation is liquid water changing into water vapor.','Condensation':'Condensation is water vapor cooling into liquid droplets.','Precipitation':'Precipitation is water falling from clouds as rain, snow, sleet, or hail.','Runoff':'Runoff is water flowing over land toward streams, rivers, and the ocean.'};
+var gWaterCycle=labelGen('cycle',[
+ ['The Sun\u2019s energy turns liquid ocean water into water vapor.','Evaporation','Liquid water changing into vapor is evaporation.'],
+ ['Water vapor cools and turns into tiny droplets that form clouds.','Condensation','Vapor changing into liquid is condensation.'],
+ ['Rain, snow, sleet, or hail falls from clouds.','Precipitation','Water falling from clouds is precipitation.'],
+ ['Rainwater flows downhill over the ground into a stream.','Runoff','Water flowing over land is runoff.'],
+ ['A puddle slowly dries up on a sunny day.','Evaporation','The puddle\u2019s liquid water changes into vapor, so it is evaporation.'],
+ ['Water drops form on the outside of a cold glass on a humid day.','Condensation','Water vapor in the air cools and turns to liquid on the glass.'],
+ ['Snow falls on a mountain.','Precipitation','Water falling from clouds as snow is precipitation.'],
+ ['Rainwater washes down a street into a storm drain.','Runoff','Water flowing over the surface is runoff.']
+],['Evaporation','Condensation','Precipitation','Runoff'],function(l){return 'Not this one. '+WCW[l];},'Which part of the water cycle is this?<br>');
+var gSunLand=bankGen('land',[
+ ['Why do coastal cities usually have milder temperatures than inland cities?','Water heats up and cools down more slowly than land','The ocean takes in or gives off a lot of energy without changing temperature much, which keeps nearby land milder.',
+  [['The ocean gives off its own heat all year','The ocean gets its energy from the Sun.'],['The Sun shines less on the coast','The coast gets about the same sunlight as inland areas.'],['Coastal cities are always at a higher elevation','Many coastal cities are at sea level.']]],
+ ['On a sunny day at the beach, a cool breeze blows from the ocean toward the land. Why?','Land heats faster, so air over land rises and cooler ocean air moves in','Warm air rises over the hot land, and cooler air from over the water flows in to replace it.',
+  [['The Moon pulls air toward the land','The Moon does not cause the sea breeze.'],['Air over the water is warmer, so it rises','The air over land is the warmer air in the daytime.'],['Salty air is heavier and falls onto the land','The breeze comes from the temperature difference, not from salt.']]],
+ ['Which heats up faster in sunlight: land or water?','Land heats up faster than water','Water takes more energy to warm up than land does.',
+  [['Water heats up faster than land','Water warms up slowly.'],['They heat up at exactly the same rate','Land warms much faster than water.'],['Neither one heats up in sunlight','Both absorb sunlight, but at different rates.']]],
+ ['At night, land cools faster than the ocean. Which way does the breeze blow?','From the land toward the warmer sea','Warm air rises over the water, and cooler air from the land flows out to replace it.',
+  [['From the sea toward the land','That is the daytime sea breeze.'],['It stops completely','There is still a temperature difference, so air still moves.'],['Straight up from the land','Air rises over the warmer water, not over the cooler land.']]],
+ ['The Gulf of Mexico stays warm into the fall. How does this affect nearby land?','It keeps coastal temperatures milder and adds moisture to the air','Warm water warms the air above it and evaporates, adding moisture.',
+  [['It makes coastal land much colder','Warm water makes nearby land milder, not colder.'],['It has no effect on the weather','Large bodies of water strongly affect nearby weather.'],['It removes moisture from the air','Warm water evaporates and adds moisture to the air.']]],
+ ['Why can a desert get very hot during the day and cool off quickly at night?','Dry air and dry land hold little heat, so energy escapes quickly','With little water vapor and moisture, the desert cannot hold on to heat after sunset.',
+  [['Deserts are much closer to the Sun','Deserts are the same distance from the Sun as other places.'],['Sand makes its own heat during the day','Sand absorbs heat from the Sun. It does not make heat.'],['The Moon cools the ground at night','The Moon does not cool the ground.']]]
+]);
+
+/* ---------- SET 25: Global Wind Patterns (8.10B) ---------- */
+var WBW={'Trade winds':'Trade winds blow from east to west between the equator and about 30\u00b0 latitude.','Westerlies':'Westerlies blow from west to east between about 30\u00b0 and 60\u00b0 latitude.','Polar easterlies':'Polar easterlies blow from the east near the poles (60\u00b0 to 90\u00b0).','Doldrums':'The doldrums are a calm zone near the equator where warm air rises.'};
+var gWindBelt=labelGen('belts',[
+ ['Winds between 30\u00b0 and 60\u00b0 latitude that blow from west to east and push weather across the United States.','Westerlies','These winds blow from the west, so weather in Texas usually moves from west to east.'],
+ ['Steady winds near the equator that blow from east to west. Sailors used them to cross the Atlantic.','Trade winds','Trade winds blow from the east toward the west in the tropics.'],
+ ['Cold winds near the poles that blow from the east.','Polar easterlies','Polar easterlies are the cold winds blowing away from the poles.'],
+ ['A calm region near the equator where warm air rises and winds are light.','Doldrums','Near the equator, warm air rises instead of blowing sideways, so winds are light.'],
+ ['These winds explain why most storms in Texas move from west to east.','Westerlies','The westerlies steer weather systems across the middle latitudes.'],
+ ['Winds in the zone from the equator to 30\u00b0 latitude that blow toward the equator and to the west.','Trade winds','Trade winds blow from the east in the tropics.'],
+ ['Winds between 60\u00b0 and 90\u00b0 latitude that blow from the east.','Polar easterlies','These cold winds blow from the poles toward lower latitudes.']
+],['Trade winds','Westerlies','Polar easterlies','Doldrums'],function(l){return 'Not this one. '+WBW[l];},'Which global wind belt is described?<br>');
+var gWindCause=bankGen('cause',[
+ ['What causes Earth\u2019s global wind patterns?','Uneven heating of Earth by the Sun, plus Earth\u2019s rotation','The equator is heated more than the poles, which sets air moving. Earth\u2019s spin then bends the winds.',
+  [['Ocean tides','Tides are caused by gravity and do not set global winds.'],['The phases of the Moon','Moon phases do not drive wind.'],['Earth\u2019s magnetic field','The magnetic field does not make wind.']]],
+ ['What does the Coriolis effect do to winds in the Northern Hemisphere?','It bends them to the right','Earth\u2019s rotation turns moving air to the right in the Northern Hemisphere.',
+  [['It bends them to the left','That happens in the Southern Hemisphere.'],['It makes them stronger','The Coriolis effect changes direction, not speed.'],['It stops them from blowing','The Coriolis effect only turns the wind.']]],
+ ['In which direction does wind blow between areas of different air pressure?','From high pressure to low pressure','Air flows from areas of higher pressure toward areas of lower pressure.',
+  [['From low pressure to high pressure','Wind blows toward low pressure, not away from it.'],['It does not move','Differences in pressure make air move.'],['Straight up only','Wind moves sideways from high pressure to low pressure.']]],
+ ['What is the jet stream?','A narrow band of fast, high-altitude winds that helps steer weather','The jet stream flows from west to east and moves weather systems along.',
+  [['A warm ocean current in the Gulf of Mexico','That describes the Loop Current, which is water, not air.'],['A wind that only blows at the equator','The jet streams are found in the middle latitudes.'],['A stream of air made by jet engines','The jet stream is a natural wind high in the atmosphere.']]],
+ ['Air near the equator is heated strongly by the Sun. What happens to that air?','It rises, which makes a zone of low pressure','Warm air is lighter, so it rises and leaves low pressure near the surface.',
+  [['It sinks, which makes high pressure','Warm air rises. Cool air sinks.'],['It stays in place','Heated air rises, which starts the global wind pattern.'],['It flows straight to the poles at the surface','Warm air rises first, then moves away high in the atmosphere.']]],
+ ['Why are many of the world\u2019s big deserts found near 30\u00b0 latitude?','Dry air sinks there, which keeps clouds and rain from forming','Sinking air warms and dries out, which makes clear, dry weather.',
+  [['The Sun is directly overhead all year there','The Sun is directly overhead near the equator, not at 30\u00b0.'],['There are no oceans anywhere near 30\u00b0 latitude','There are oceans near 30\u00b0. The sinking dry air is the reason.'],['The poles send hot air to 30\u00b0','The poles are cold, not hot.']]],
+ ['Warm air rises at the equator. Where does much of that air sink back down?','Near 30\u00b0 latitude','The air cools as it moves away from the equator and sinks near 30\u00b0 north and south.',
+  [['Right at the equator','The air rises at the equator.'],['Only at the North Pole','Some air sinks at the poles, but much of the air from the equator sinks near 30\u00b0.'],['It never sinks','Air that rises must sink somewhere, forming a loop.']]]
+]);
+var gWindLocal=bankGen('local',[
+ ['In summer, winds in South Texas often blow from the Gulf of Mexico. How does this affect local weather?','It brings warm, humid air that can build clouds and storms','Air that passes over warm water picks up moisture, which can build clouds and thunderstorms.',
+  [['It brings dry desert air','Air from the Gulf is moist, not dry.'],['It brings freezing air from the poles','Air from the Gulf is warm.'],['It has no effect on the weather','Moist Gulf air strongly affects Texas weather.']]],
+ ['A high-pressure system moves over your town. What weather is most likely?','Clear, calm weather','In high pressure, air sinks, which keeps clouds from forming.',
+  [['Stormy, rainy weather','Storms are more likely with low pressure.'],['A hurricane right away','A high-pressure system brings sinking air and clear skies.'],['Thick clouds that last for days','Sinking air keeps clouds from forming.']]],
+ ['A low-pressure system moves over your town. What weather is most likely?','Clouds and a chance of rain or storms','In low pressure, air rises and cools, which forms clouds and precipitation.',
+  [['Clear, calm skies','Clear skies are more likely with high pressure.'],['No wind at all','Air moves toward low pressure, so winds are common.'],['Dry air sinking from above','Air rises in low pressure and sinks in high pressure.']]],
+ ['In the United States, weather systems usually travel in which direction?','From west to east','The westerlies and the jet stream push weather systems from west to east.',
+  [['From east to west','That is the direction of the trade winds, not the westerlies.'],['From south to north only','The main direction is from west to east.'],['They do not move','Weather systems are moved along by winds in the atmosphere.']]],
+ ['A cold air mass from the north pushes into Texas and replaces warm air. What is the boundary called?','A cold front','A cold front is the leading edge of cold air that is replacing warmer air.',
+  [['A warm front','A warm front is where warm air replaces cooler air.'],['A trade wind','Trade winds are a global wind belt, not a front.'],['A doldrum','Doldrums are a calm region near the equator.']]],
+ ['Why does the weather in a place often change when the jet stream shifts?','The jet stream steers warm and cold air masses and storms over the area','The jet stream is a boundary between warm and cold air masses and guides storm systems.',
+  [['The jet stream makes the Sun brighter','The jet stream does not change the Sun.'],['The jet stream stops all wind','The jet stream is a fast wind, not a calm zone.'],['The jet stream makes the ground colder','The jet stream is high in the atmosphere and does not cool the ground directly.']]]
+]);
+
+/* ---------- SET 26: Hurricanes and Typhoons (8.10C) ---------- */
+var gHurrForm=bankGen('form',[
+ ['What ocean condition is needed for a hurricane to form?','Warm surface water, at least about 80\u00b0F (26.5\u00b0C)','Warm water evaporates quickly and supplies the moisture and energy that a storm needs.',
+  [['Cold water from deep ocean currents','Cold water cannot supply enough heat and moisture.'],['Water that is frozen on the surface','Frozen water cannot evaporate into the air.'],['Very strong ocean tides','Tides are not what powers a hurricane.']]],
+ ['How does warm ocean water help a hurricane grow?','Evaporation adds moisture, and condensation releases heat that powers it','Warm, moist air rises. As the water vapor condenses into clouds, it releases energy.',
+  [['It cools the air above it so the air sinks','Hurricanes need rising, warm, moist air.'],['It blocks the winds from blowing','Warm water does not block wind.'],['It removes moisture from the air','Warm water adds moisture to the air.']]],
+ ['Why does a hurricane spin?','Air flows toward low pressure and Earth\u2019s rotation turns it','Air flows toward the low-pressure center, and the Coriolis effect bends it into a spin.',
+  [['Ocean tides twist the clouds','Tides do not make a hurricane spin.'],['The Moon\u2019s gravity pulls the storm in a circle','The Moon\u2019s gravity does not make a hurricane spin.'],['Mountains force the air to turn','Hurricanes form over open ocean, not mountains.']]],
+ ['In which direction do hurricanes in the Northern Hemisphere spin?','Counterclockwise','The Coriolis effect turns winds to the right, which makes Northern Hemisphere storms spin counterclockwise.',
+  [['Clockwise','That is the direction in the Southern Hemisphere.'],['They do not spin','Hurricanes spin around a low-pressure center.'],['Back and forth in a line','Hurricanes spin in a circle around the eye.']]],
+ ['Why do hurricanes almost never form right at the equator?','The Coriolis effect is too weak there to make the air spin','Spin needs the Coriolis effect, which is close to zero at the equator.',
+  [['The ocean is too cold there','The ocean near the equator is very warm.'],['The winds are too strong there','Winds near the equator are usually light.'],['There is not enough sunlight there','The equator gets a lot of sunlight.']]],
+ ['Which can supply warm water that feeds Atlantic hurricanes in the Gulf of Mexico?','Warm ocean currents like the Loop Current','The Loop Current carries warm water into the Gulf of Mexico.',
+  [['The cold California Current','That cold current is in the Pacific Ocean and cools the air.'],['The cold Labrador Current','That cold current flows from the Arctic and cools the air.'],['Melting polar ice','Cold meltwater cannot feed a hurricane.']]],
+ ['When does the Atlantic hurricane season officially run?','June 1 to November 30','Atlantic hurricane season begins in June and ends in late November.',
+  [['December 1 to May 31','That is the opposite part of the year, outside hurricane season.'],['January 1 to March 31','Those are the winter months.'],['September 1 to September 30','The season is much longer than one month.']]],
+ ['A hurricane forms when warm, moist air over the ocean rises. What happens next to the air near the surface?','Air flows in toward the low pressure and also rises, feeding the storm','As the warm air rises, surface air rushes in to replace it, and that air rises too.',
+  [['The air sinks and the storm fades','Hurricanes need air that keeps rising.'],['The air stops moving','Air flows in toward the low-pressure center.'],['The air turns into water and disappears','Moist air condenses into clouds and rain, which release heat.']]]
+]);
+var HNW={'Hurricane':'A hurricane forms over the Atlantic Ocean or the northeast Pacific Ocean.','Typhoon':'A typhoon forms over the northwest Pacific Ocean.','Cyclone':'A cyclone is a tropical cyclone over the Indian Ocean or South Pacific.','Tornado':'A tornado is a small, narrow funnel of spinning air from a thunderstorm over land, not a huge storm over warm ocean water.'};
+var gHurrName=labelGen('name',[
+ ['A huge tropical storm forms over the warm Gulf of Mexico and hits Texas.','Hurricane','Tropical cyclones in the Atlantic Ocean region, including the Gulf of Mexico, are called hurricanes.'],
+ ['A tropical storm forms in the northwest Pacific Ocean and hits the Philippines.','Typhoon','Tropical cyclones in the northwest Pacific are called typhoons.'],
+ ['A tropical storm forms in the Indian Ocean and hits India.','Cyclone','Tropical cyclones in the Indian Ocean are called cyclones.'],
+ ['A tropical storm forms in the Atlantic Ocean and hits Florida.','Hurricane','Tropical cyclones in the Atlantic are called hurricanes.'],
+ ['A tropical storm forms over the Pacific near Japan.','Typhoon','Tropical cyclones in the northwest Pacific are called typhoons.'],
+ ['A tropical storm forms in the South Pacific near Australia.','Cyclone','Tropical cyclones in the South Pacific are called cyclones.'],
+ ['A tropical storm forms in the northeast Pacific Ocean near Mexico.','Hurricane','Tropical cyclones in the northeast Pacific are also called hurricanes.']
+],['Hurricane','Typhoon','Cyclone','Tornado'],function(l){return 'Not this one. '+HNW[l];},'What is this storm called?<br>');
+var gHurrStorm=bankGen('storm',[
+ ['What is the calm, clear center of a hurricane called?','The eye','Air sinks in the eye, so the weather is calm and often clear.',
+  [['The eyewall','The eyewall surrounds the eye and has the strongest winds.'],['A rainband','Rainbands are spiral bands of clouds and rain.'],['The storm surge','Storm surge is a rise of ocean water, not a part of the sky.']]],
+ ['Which part of a hurricane has the strongest winds and heaviest rain?','The eyewall','The eyewall is the ring of towering clouds around the eye.',
+  [['The eye','The eye is the calm center.'],['The outer edge of the clouds','Winds are weaker far from the center.'],['The calm zone after the storm','The strongest winds are in the eyewall.']]],
+ ['What happens to a hurricane when it moves over land?','It weakens because it loses warm ocean water and friction slows it','A hurricane gets its energy from warm ocean water. Over land, that supply is cut off.',
+  [['It gets stronger because land is warmer than the ocean','Land cannot supply the warm, moist air the storm needs.'],['It stays the same strength no matter what','Hurricanes weaken quickly without warm ocean water.'],['It turns into a typhoon','Typhoon is just a name for storms in the northwest Pacific.']]],
+ ['What is a storm surge?','A rise of ocean water pushed onto land by a storm\u2019s winds','Strong winds push water toward the coast, which can flood areas near the shore.',
+  [['The calm center of the hurricane','That is the eye.'],['Heavy rain falling in bands','That describes rainbands.'],['A large wave caused by an earthquake','That is a tsunami.']]],
+ ['What happens to a hurricane if it moves over cold ocean water?','It weakens because the cold water cannot supply enough heat and moisture','Hurricanes need warm water. Cold water removes their energy source.',
+  [['It gets stronger because the water is cold','Cold water cannot supply the energy a hurricane needs.'],['It speeds up and spins faster','The storm loses energy over cold water.'],['It turns into a tornado','A hurricane does not turn into a tornado because the water is cold.']]],
+ ['Why can a hurricane be dangerous far from the coast?','Its winds, rain, and storm surge can affect a very wide area','Hurricanes are very large, so their winds, rain, and surge can affect a wide area.',
+  [['It only affects the exact spot where the eye lands','Hurricanes are hundreds of miles wide.'],['It only causes problems at sea','Hurricanes can cause flooding, wind damage, and storm surge on land.'],['It brings no rain','Hurricanes can bring very heavy rain.']]]
+]);
+
+/* =====================================================================
    The list of sets (append only, never reorder)
    ===================================================================== */
 var SETS=[
@@ -1011,7 +1542,17 @@ var SETS=[
  {id:'matter',name:'Classify Matter',teks:'8.6A',grade:8,topics:[{id:'sub',name:'Name the matter'},{id:'model',name:'Particle models'},{id:'formula',name:'From a formula'}],gen:{sub:gSubstance,model:gMatterModel,formula:gMatterFormula}},
  {id:'ptable',name:'Periodic Table and Reactions',teks:'8.6B',grade:8,topics:[{id:'symbol',name:'Symbols'},{id:'number',name:'Atomic numbers'},{id:'reactants',name:'Atoms in reactants'}],gen:{symbol:gSymbol,number:gAtomicNumber,reactants:gReactants}},
  {id:'consmass',name:'Conservation of Mass',teks:'8.6E',grade:8,topics:[{id:'mass',name:'Mass math'},{id:'balance',name:'Balance equations'},{id:'count',name:'Count atoms'},{id:'closed',name:'Big ideas'}],gen:{mass:gMassCons,balance:gBalance,count:gAtomCount,closed:gClosed}},
- {id:'newton3',name:'Newton’s Three Laws',teks:'8.7B',grade:8,topics:[{id:'which',name:'Which law?'},{id:'pair',name:'Action and reaction'}],gen:{which:gThreeLaws,pair:gForcePair}}
+ {id:'newton3',name:'Newton’s Three Laws',teks:'8.7B',grade:8,topics:[{id:'which',name:'Which law?'},{id:'pair',name:'Action and reaction'}],gen:{which:gThreeLaws,pair:gForcePair}},
+ {id:'seasons',name:'Earth\u2019s Seasons',teks:'6.9A',grade:6,topics:[{id:'cause',name:'What causes seasons'},{id:'hemi',name:'Opposite seasons'},{id:'orbit',name:'Orbit diagram'}],gen:{cause:gSeasonCause,hemi:gSeasonHemi,orbit:gSeasonOrbit}},
+ {id:'tides',name:'Ocean Tides',teks:'6.9B',grade:6,topics:[{id:'cause',name:'What makes tides'},{id:'springneap',name:'Spring and neap tides'},{id:'time',name:'Predict the tides'}],gen:{cause:gTideCause,springneap:gSpringNeap,time:gTideTime}},
+ {id:'heattransfer',name:'Heat Transfer',teks:'7.8A',grade:7,topics:[{id:'type',name:'Name the method'},{id:'idea',name:'Big ideas'}],gen:{type:gHeatMethod,idea:gHeatIdea}},
+ {id:'kinetic',name:'Temperature and Particles',teks:'7.8C',grade:7,topics:[{id:'link',name:'Temperature and motion'},{id:'compare',name:'Compare samples'}],gen:{link:gTempLink,compare:gTempCompare}},
+ {id:'waves',name:'Transverse Waves',teks:'8.8A',grade:8,topics:[{id:'parts',name:'Parts of a wave'},{id:'compare',name:'Compare waves'},{id:'freq',name:'Find frequency'},{id:'spectrum',name:'EM spectrum'},{id:'idea',name:'Big ideas'}],gen:{parts:gWaveParts,compare:gWaveCompare,freq:gWaveFreq,spectrum:gEMOrder,idea:gWaveIdea}},
+ {id:'stars',name:'Stars and the H-R Diagram',teks:'8.9A',grade:8,topics:[{id:'life',name:'Life of a star'},{id:'region',name:'Regions of the H-R'},{id:'compare',name:'Compare two stars'}],gen:{life:gStarLife,region:gHRRegion,compare:gHRCompare}},
+ {id:'galaxies',name:'Types of Galaxies',teks:'8.9B',grade:8,topics:[{id:'shape',name:'Name the galaxy'},{id:'clues',name:'Galaxy clues'},{id:'home',name:'Our galaxy'}],gen:{shape:gGalaxyShape,clues:gGalaxyClue,home:gGalaxyHome}},
+ {id:'sunweather',name:'Sun, Water and Weather',teks:'8.10A',grade:8,topics:[{id:'sun',name:'Energy from the Sun'},{id:'cycle',name:'Water cycle'},{id:'land',name:'Land and water'}],gen:{sun:gSunEnergy,cycle:gWaterCycle,land:gSunLand}},
+ {id:'globalwinds',name:'Global Wind Patterns',teks:'8.10B',grade:8,topics:[{id:'belts',name:'Wind belts'},{id:'cause',name:'What moves air'},{id:'local',name:'Local weather'}],gen:{belts:gWindBelt,cause:gWindCause,local:gWindLocal}},
+ {id:'hurricanes',name:'Hurricanes and Typhoons',teks:'8.10C',grade:8,topics:[{id:'form',name:'How they form'},{id:'name',name:'Name the storm'},{id:'storm',name:'Parts and effects'}],gen:{form:gHurrForm,name:gHurrName,storm:gHurrStorm}}
 ];
 SETS.forEach(function(s){s.topicIds=s.topics.map(function(t){return t.id;});});
 function findSet(id){for(var i=0;i<SETS.length;i++)if(SETS[i].id===id)return i;return -1;}
